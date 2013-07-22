@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<sectionGroup name="Fetcher">
+		<section name="qPIFilter_0"></section>
+		<section name="qPIFilter_1"></section>
+		<section name="qPIFilter_2"></section>
+	</sectionGroup>
+	
+	<sectionGroup name="Publisher">
+		<section name="qPIFilter_0"></section>
+		<section name="qPIFilter_1"></section>
+		<section name="qPIFilter_2"></section>
+	</sectionGroup>
+
+	<sectionGroup name="Watcher">
+		<section name="qPIFilter_0"></section>
+		<section name="qPIFilter_1"></section>
+		<section name="qPIFilter_2"></section>
+	</sectionGroup>
+</configuration>
