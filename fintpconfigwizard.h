@@ -2,6 +2,7 @@
 #define FINTPCONFIGWIZARD_H
 
 #include <QDialog>
+#include <QXmlStreamReader>
 
 /*
 #include <QMainWindow>
@@ -28,6 +29,7 @@ class QDialogButtonBox;
 class QTabWidget;
 QT_END_NAMESPACE
 
+/*
 class GeneralTab : public QWidget
 {
     Q_OBJECT
@@ -35,23 +37,7 @@ class GeneralTab : public QWidget
 public:
     explicit GeneralTab(QWidget *parent = 0);
 };
-
-class ConfigurationTab : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit ConfigurationTab(QWidget *parent = 0);
-};
-
-
-class ApplicationsTab : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit ApplicationsTab(QWidget *parent = 0);
-};
+*/
 
 class TabDialog : public QDialog
 {
@@ -60,9 +46,18 @@ class TabDialog : public QDialog
 public:
     explicit TabDialog(QWidget *parent = 0);
 
+private slots:
+    void parseXML();
+
 private:
     QTabWidget *tabWidget;
     QDialogButtonBox *buttonBox;
+
+    QMap<QString, QString> parseSectionGroup(QXmlStreamReader& xml);
+    void addElementDataToMap(QXmlStreamReader& xml,
+                             QMap<QString, QString>& map) const;
+
+    void addSectionsToUI(QList< QMap<QString,QString> >& persons);
 };
 
 
