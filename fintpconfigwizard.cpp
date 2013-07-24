@@ -147,17 +147,16 @@ void TabDialog::addElementDataToMap(QXmlStreamReader& xml,
 }
 
 void TabDialog::addSectionsToUI(QList< QMap<QString,QString> >& sections) {
+
     while(!sections.isEmpty()) {
-        /*
-         * TO DO: For each section must create a new tab
-         */
         QWidget *tab = new QWidget();
         QFormLayout* layout = new QFormLayout;
         QMap<QString,QString> section = sections.takeFirst();
 
-        QMapIterator<QString, QString> iter(section);
-        while ( iter.hasNext()){
+        QMap<QString, QString>::const_iterator iter = section.constBegin();
+        while ( iter != section.constEnd()){
             layout->addRow(iter.key(), new QLineEdit(iter.value()));
+            ++iter;
         }
         tab->setLayout(layout);
         this->tabWidget->addTab(tab, section.value("name", "Unknown"));

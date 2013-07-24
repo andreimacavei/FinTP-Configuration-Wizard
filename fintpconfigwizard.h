@@ -4,6 +4,13 @@
 #include <QDialog>
 #include <QXmlStreamReader>
 
+#include <QtCore/QPointer>
+#include <QtCore/QFile>
+#include <QtCore/QIODevice>
+#include <QtCore/QList>
+#include <QtCore/QMap>
+#include <QtCore/QString>
+
 /*
 #include <QMainWindow>
 
@@ -48,7 +55,7 @@ private:
     void addElementDataToMap(QXmlStreamReader& xml,
                              QMap<QString, QString>& map) const;
 
-    void addSectionsToUI(QList< QMap<QString,QString> >& persons);
+    void addSectionsToUI(QList< QMap<QString,QString> >& sections);
 };
 
 
