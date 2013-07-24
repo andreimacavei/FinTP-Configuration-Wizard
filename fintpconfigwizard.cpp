@@ -2,6 +2,7 @@
 #include "ui_fintpconfigwizard.h"
 #include <QtWidgets>
 
+
 /*
 FinTPConfigWizard::FinTPConfigWizard(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +32,8 @@ TabDialog::TabDialog(QWidget *parent)
     /*
      * TO DO: Populate tabWidget with tabs retrieved from parsed XML
      */
+
+    parseXML();
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
@@ -154,6 +157,16 @@ void TabDialog::addSectionsToUI(QList< QMap<QString,QString> >& sections) {
         /*
          * TO DO: For each section must create a new tab
          */
+        QWidget *tab = new QWidget();
+        QFormLayout* layout = new QFormLayout;
+        QMap<QString,QString> section = sections.takeFirst();
+
+        QMapIterator<QString, QString> iter(section);
+        while ( iter.hasNext()){
+            layout->addRow(iter.key(), new QLineEdit(iter.value()));
+        }
+        tab->setLayout(layout);
+        this->tabWidget->addTab(tab, section.value("name", "Unknown"));
     }
 }
 
