@@ -24,12 +24,6 @@ TabDialog::TabDialog(QWidget *parent)
     tabWidget = new QTabWidget;
 
     /*
-    tabWidget->addTab(new GeneralTab(), tr("Fetcher"));
-    tabWidget->addTab(new QWidget(), tr("Publisher"));
-    tabWidget->addTab(new QWidget(), tr("Watcher"));
-    */
-
-    /*
      * TO DO: Populate tabWidget with tabs retrieved from parsed XML
      */
 
@@ -169,38 +163,3 @@ void TabDialog::addSectionsToUI(QList< QMap<QString,QString> >& sections) {
         this->tabWidget->addTab(tab, section.value("name", "Unknown"));
     }
 }
-
-
-/*
-GeneralTab::GeneralTab(QWidget *parent)
-    : QWidget(parent)
-{
-    QLabel *fileNameLabel = new QLabel(tr("qPIFilter_0"));
-    QLineEdit *fileNameEdit = new QLineEdit("Enter file to be fetched...");
-
-    QLabel *pathLabel = new QLabel(tr("qPIFilter_1"));
-    QLabel *pathValueLabel = new QLabel("Path/to/file");
-    pathValueLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-
-    QLabel *lastReadLabel = new QLabel(tr("qPIFilter_3"));
-    QLabel *lastReadValueLabel = new QLabel("XSLT");
-    lastReadValueLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-
-    QLabel *lastModLabel = new QLabel(tr("qPIFilter_3"));
-    QLabel *lastModValueLabel = new QLabel("WMQ");
-    lastModValueLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(fileNameLabel);
-    mainLayout->addWidget(fileNameEdit);
-    mainLayout->addWidget(pathLabel);
-    mainLayout->addWidget(pathValueLabel);
-
-    mainLayout->addWidget(lastReadLabel);
-    mainLayout->addWidget(lastReadValueLabel);
-    mainLayout->addWidget(lastModLabel);
-    mainLayout->addWidget(lastModValueLabel);
-    mainLayout->addStretch(1);
-    setLayout(mainLayout);
-}
-*/

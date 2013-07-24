@@ -29,15 +29,6 @@ class QDialogButtonBox;
 class QTabWidget;
 QT_END_NAMESPACE
 
-/*
-class GeneralTab : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit GeneralTab(QWidget *parent = 0);
-};
-*/
 
 class TabDialog : public QDialog
 {
