@@ -17,7 +17,7 @@ FinTPConfigWizard::~FinTPConfigWizard()
 }
 */
 
-TabDialog::TabDialog(QWidget *parent)
+TabDialog::TabDialog(const QString &fileName, QWidget *parent)
     : QDialog(parent)
 {
 
@@ -27,7 +27,7 @@ TabDialog::TabDialog(QWidget *parent)
      * TO DO: Populate tabWidget with tabs retrieved from parsed XML
      */
 
-    parseXML();
+    parseXML(fileName);
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
@@ -43,9 +43,9 @@ TabDialog::TabDialog(QWidget *parent)
     setWindowTitle(tr("FinTP Config GUI"));
 }
 
-void TabDialog::parseXML() {
-    /* We'll parse the example.xml */
-    QFile* file = new QFile("../FinTP-Configuration-Wizard/example.xml");
+void TabDialog::parseXML(const QString &fileName) {
+    /* We'll parse the input xml file */
+    QFile* file = new QFile(fileName);
     /* If we can't open it, let's show an error message. */
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox::critical(this,
@@ -55,7 +55,7 @@ void TabDialog::parseXML() {
         return;
     }
     /* QXmlStreamReader takes any QIODevice. */
-    QXmlStreamReader xml(file);
+    QXmlStreamReader xml(file), cursor(file);
     QList< QMap<QString,QString> > sections;
     /* We'll parse the XML until we reach end of it.*/
     while(!xml.atEnd() &&
@@ -74,6 +74,9 @@ void TabDialog::parseXML() {
             }
             /* If it's named sectionGroup, we'll dig the information from there.*/
             if(xml.name() == "sectionGroup") {
+                /*
+                 * TO DO: get a copy of current element from xml object
+                 */
                 sections.append(this->parseSectionGroup(xml));
             }
         }
@@ -114,7 +117,7 @@ QMap<QString, QString> TabDialog::parseSectionGroup(QXmlStreamReader& xml) {
     while(!(xml.tokenType() == QXmlStreamReader::EndElement &&
             xml.name() == "sectionGroup")) {
         if(xml.tokenType() == QXmlStreamReader::StartElement) {
-            /* We've add all section filters to Map. */
+            /* We add all section filters to Map. */
             if(xml.name() == "section") {
                 this->addElementDataToMap(xml, sectionGroup);
             }
@@ -132,27 +135,27 @@ void TabDialog::addElementDataToMap(QXmlStreamReader& xml,
         return;
     }
     /* Let's read the filter */
-    QString elementName = xml.name().toString();
-    /* ...go to the next. */
-    xml.readNext();
-    /*
-     * This elements needs to contain Characters so we know it's
-     * actually data, if it's not we'll leave.
-     */
-    if(xml.tokenType() != QXmlStreamReader::Characters) {
+
+    QXmlStreamAttributes attributes = xml.attributes();
+    if(!attributes.hasAttribute("name")){
         return;
     }
+    /* ...go to the next. */
+    xml.readNext();
+
     /* Now we can add it to the map.*/
-    map.insert(elementName, xml.text().toString());
+    map.insert(attributes.value("name").toString(), xml.text().toString());
 }
 
 void TabDialog::addSectionsToUI(QList< QMap<QString,QString> >& sections) {
 
     while(!sections.isEmpty()) {
         QWidget *tab = new QWidget();
+
         QFormLayout* layout = new QFormLayout;
         QMap<QString,QString> section = sections.takeFirst();
 
+        //QGroupBox* sectionBox = new QGroupBox(tr(sections["name"]));
         QMap<QString, QString>::const_iterator iter = section.constBegin();
         while ( iter != section.constEnd()){
             layout->addRow(iter.key(), new QLineEdit(iter.value()));

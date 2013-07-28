@@ -42,10 +42,10 @@ class TabDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit TabDialog(QWidget *parent = 0);
+    explicit TabDialog(const QString &fileName, QWidget *parent = 0);
 
 private slots:
-    void parseXML();
+    void parseXML(const QString &fileName);
 
 private:
     QTabWidget *tabWidget;
