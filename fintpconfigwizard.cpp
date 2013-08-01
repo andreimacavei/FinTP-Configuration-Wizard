@@ -1,6 +1,5 @@
 #include "fintpconfigwizard.h"
 #include "ui_fintpconfigwizard.h"
-#include <QtWidgets>
 
 
 /*
@@ -20,7 +19,6 @@ FinTPConfigWizard::~FinTPConfigWizard()
 TabDialog::TabDialog(const QString &fileName, QWidget *parent)
     : QDialog(parent)
 {
-
     tabWidget = new QTabWidget;
 
     /*
@@ -48,9 +46,10 @@ void TabDialog::parseXML(const QString &fileName) {
     QFile* file = new QFile(fileName);
     /* If we can't open it, let's show an error message. */
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString error_message = "Couldn't open " + fileName;
         QMessageBox::critical(this,
                               "TabDialog::parseXML",
-                              "Couldn't open example.xml",
+                              error_message,
                               QMessageBox::Ok);
         return;
     }
