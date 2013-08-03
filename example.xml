@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
+	<configSection>
 	<sectionGroup name="Fetcher">
 		<section name="qPIFilter_0"></section>
 		<section name="qPIFilter_1"></section>
@@ -17,4 +18,62 @@
 		<section name="qPIFilter_1"></section>
 		<section name="qPIFilter_2"></section>
 	</sectionGroup>
+	</configSection>
+	
+	<Fetcher>
+		<qPIFilter_0>
+			<key name="" list="1" alias="Key 1"/>"1"</key>
+			<key name="" list="2" alias="Key 2"/>"2"</key>
+			<key name="" list="3" alias="Key 3"/>"3"</key>
+		</qPIFilter_0>
+		
+		<qPIFilter_1>
+			<key name="" list="1" alias="Key 1"/>"1"</key>
+			<key name="" list="2" alias="Key 2"/>"2"</key>
+			<key name="" list="3" alias="Key 3"/>"3"</key>
+		</qPIFilter_1>
+		<qPIFilter_2>
+			<key name="" list="1" alias="Key 1"/>"1"</key>
+			<key name="" list="2" alias="Key 2"/>"2"</key>
+			<key name="" list="3" alias="Key 3"/>"3"</key>
+		</qPIFilter_2>
+	</Fetcher>
+
+	<Publisher>
+		<qPIFilter_0>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2"></key>
+			<key name="" list="3" alias="Key 3"></key>
+		</qPIFilter_0>
+		
+		<qPIFilter_1>
+			<key name="" list="1" alias="Key 1"/>"1"</key>
+			<key name="" list="2" alias="Key 2"/>"2"</key>
+			<key name="" list="3" alias="Key 3"/>"3"</key>
+		</qPIFilter_1>
+		<qPIFilter_2>
+			<key name="" list="1" alias="Key 1"/>"1"</key>
+			<key name="" list="2" alias="Key 2"/>"2"</key>
+			<key name="" list="3" alias="Key 3"/>"3"</key>
+		</qPIFilter_2>
+	</Publisher>
+
+	<Watcher>
+		<qPIFilter_0>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
+		</qPIFilter_0>
+		
+		<qPIFilter_1>
+			<key name="" list="1" alias="Key 1"/>"1"</key>
+			<key name="" list="2" alias="Key 2"/>"2"</key>
+			<key name="" list="3" alias="Key 3"/>"3"</key>
+		</qPIFilter_1>
+		<qPIFilter_2>
+			<key name="" list="1" alias="Key 1"/>"1"</key>
+			<key name="" list="2" alias="Key 2"/>"2"</key>
+			<key name="" list="3" alias="Key 3"/>"3"</key>
+		</qPIFilter_2>
+	</Watcher>
 </configuration>
