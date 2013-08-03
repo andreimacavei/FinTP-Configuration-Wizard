@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QXmlStreamReader>
+#include <QtWidgets>
 
 #include <QtCore/QPointer>
 #include <QtCore/QFile>
