@@ -22,20 +22,20 @@
 	
 	<Fetcher>
 		<qPIFilter_0>
-			<key name="" list="1" alias="Key 1"/>"1"</key>
-			<key name="" list="2" alias="Key 2"/>"2"</key>
-			<key name="" list="3" alias="Key 3"/>"3"</key>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
 		</qPIFilter_0>
 		
 		<qPIFilter_1>
-			<key name="" list="1" alias="Key 1"/>"1"</key>
-			<key name="" list="2" alias="Key 2"/>"2"</key>
-			<key name="" list="3" alias="Key 3"/>"3"</key>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
 		</qPIFilter_1>
 		<qPIFilter_2>
-			<key name="" list="1" alias="Key 1"/>"1"</key>
-			<key name="" list="2" alias="Key 2"/>"2"</key>
-			<key name="" list="3" alias="Key 3"/>"3"</key>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
 		</qPIFilter_2>
 	</Fetcher>
 
@@ -47,14 +47,14 @@
 		</qPIFilter_0>
 		
 		<qPIFilter_1>
-			<key name="" list="1" alias="Key 1"/>"1"</key>
-			<key name="" list="2" alias="Key 2"/>"2"</key>
-			<key name="" list="3" alias="Key 3"/>"3"</key>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
 		</qPIFilter_1>
 		<qPIFilter_2>
-			<key name="" list="1" alias="Key 1"/>"1"</key>
-			<key name="" list="2" alias="Key 2"/>"2"</key>
-			<key name="" list="3" alias="Key 3"/>"3"</key>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
 		</qPIFilter_2>
 	</Publisher>
 
@@ -66,14 +66,14 @@
 		</qPIFilter_0>
 		
 		<qPIFilter_1>
-			<key name="" list="1" alias="Key 1"/>"1"</key>
-			<key name="" list="2" alias="Key 2"/>"2"</key>
-			<key name="" list="3" alias="Key 3"/>"3"</key>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
 		</qPIFilter_1>
 		<qPIFilter_2>
-			<key name="" list="1" alias="Key 1"/>"1"</key>
-			<key name="" list="2" alias="Key 2"/>"2"</key>
-			<key name="" list="3" alias="Key 3"/>"3"</key>
+			<key name="" list="1" alias="Key 1">"1"</key>
+			<key name="" list="2" alias="Key 2">"2"</key>
+			<key name="" list="3" alias="Key 3">"3"</key>
 		</qPIFilter_2>
 	</Watcher>
 </configuration>

@@ -2,20 +2,6 @@
 #include "ui_fintpconfigwizard.h"
 
 
-/*
-FinTPConfigWizard::FinTPConfigWizard(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::FinTPConfigWizard)
-{
-    ui->setupUi(this);
-}
-
-FinTPConfigWizard::~FinTPConfigWizard()
-{
-    delete ui;
-}
-*/
-
 TabDialog::TabDialog(const QString &fileName, QWidget *parent)
     : QDialog(parent)
 {
@@ -54,7 +40,7 @@ void TabDialog::parseXML(const QString &fileName) {
         return;
     }
     /* QXmlStreamReader takes any QIODevice. */
-    QXmlStreamReader xml(file), cursor(file);
+    QXmlStreamReader xml(file);
     QList< QMap<QString,QString> > sections;
     /* We'll parse the XML until we reach end of it.*/
     while(!xml.atEnd() &&

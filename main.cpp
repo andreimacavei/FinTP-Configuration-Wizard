@@ -6,11 +6,6 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QString fileName;
 
-    /*
-    FinTPConfigWizard w;
-    w.show();
-    */
-
     if (argc >= 2)
         fileName = QString(argv[1]);
     else

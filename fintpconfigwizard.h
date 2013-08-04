@@ -12,25 +12,6 @@
 #include <QtCore/QMap>
 #include <QtCore/QString>
 
-/*
-#include <QMainWindow>
-
-namespace Ui {
-class FinTPConfigWizard;
-}
-
-class FinTPConfigWizard : public QMainWindow
-{
-    Q_OBJECT
-    
-public:
-    explicit FinTPConfigWizard(QWidget *parent = 0);
-    ~FinTPConfigWizard();
-    
-private:
-    Ui::FinTPConfigWizard *ui;
-};
-*/
 
 QT_BEGIN_NAMESPACE
 class QDialogButtonBox;
