@@ -32,12 +32,6 @@ private slots:
 private:
     QTabWidget *tabWidget;
     QDialogButtonBox *buttonBox;
-
-    QMap<QString, QString> parseSectionGroup(QXmlStreamReader& xml);
-    void addElementDataToMap(QXmlStreamReader& xml,
-                             QMap<QString, QString>& map) const;
-
-    void addSectionsToUI(QList< QMap<QString,QString> >& sections);
 };
 
 

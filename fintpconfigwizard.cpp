@@ -1,16 +1,14 @@
 #include "fintpconfigwizard.h"
-#include "ui_fintpconfigwizard.h"
 
+#include <QDomDocument>
+#include <QDomElement>
+#include <QDomNodeList>
 
 TabDialog::TabDialog(const QString &fileName, QWidget *parent)
     : QDialog(parent)
 {
     tabWidget = new QTabWidget;
-
-    /*
-     * TO DO: Populate tabWidget with tabs retrieved from parsed XML
-     */
-
+    // We load the interface from XML file
     parseXML(fileName);
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -28,9 +26,7 @@ TabDialog::TabDialog(const QString &fileName, QWidget *parent)
 }
 
 void TabDialog::parseXML(const QString &fileName) {
-    /* We'll parse the input xml file */
     QFile* file = new QFile(fileName);
-    /* If we can't open it, let's show an error message. */
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString error_message = "Couldn't open " + fileName;
         QMessageBox::critical(this,
@@ -39,114 +35,64 @@ void TabDialog::parseXML(const QString &fileName) {
                               QMessageBox::Ok);
         return;
     }
-    /* QXmlStreamReader takes any QIODevice. */
-    QXmlStreamReader xml(file);
-    QList< QMap<QString,QString> > sections;
-    /* We'll parse the XML until we reach end of it.*/
-    while(!xml.atEnd() &&
-            !xml.hasError()) {
-        /* Read next element.*/
-        QXmlStreamReader::TokenType token = xml.readNext();
-        /* If token is just StartDocument, we'll go to next.*/
-        if(token == QXmlStreamReader::StartDocument) {
-            continue;
-        }
-        /* If token is StartElement, we'll see if we can read it.*/
-        if(token == QXmlStreamReader::StartElement) {
-            /* If it's named configuration, we'll go to the next.*/
-            if(xml.name() == "configuration") {
-                continue;
-            }
-            /* If it's named sectionGroup, we'll dig the information from there.*/
-            if(xml.name() == "sectionGroup") {
-                /*
-                 * TO DO: get a copy of current element from xml object
-                 */
-                sections.append(this->parseSectionGroup(xml));
-            }
-        }
-    }
-    /* Error handling. */
-    if(xml.hasError()) {
+    QDomDocument doc("configFile");
+    if (!doc.setContent(file))
+    {
+        QString error = "Error";
         QMessageBox::critical(this,
                               "TabDialog::parseXML",
-                              xml.errorString(),
+                              error,
+                              QMessageBox::Ok);
+        return;
+    }
+
+    QDomElement docElem = doc.documentElement();
+    QString rootTag = docElem.tagName();
+
+    if(rootTag != "configuration")
+    {
+        QString error = "XML file with bad format";
+        QMessageBox::critical(this,
+                              "TabDialog::parseXML",
+                              error,
                               QMessageBox::Ok);
     }
-    /* Removes any device() or data from the reader
-     * and resets its internal state to the initial state. */
-    xml.clear();
-    this->addSectionsToUI(sections);
-}
 
-QMap<QString, QString> TabDialog::parseSectionGroup(QXmlStreamReader& xml) {
-    QMap<QString, QString> sectionGroup;
-    /* Let's check that we're really getting a sectionGroup. */
-    if(xml.tokenType() != QXmlStreamReader::StartElement &&
-            xml.name() == "sectionGroup") {
-        return sectionGroup;
-    }
-    /* Let's get the attributes for sectionGroup */
-    QXmlStreamAttributes attributes = xml.attributes();
-    /* Let's check that sectionGroup has name attribute. */
-    if(attributes.hasAttribute("name")) {
-        /* We'll add it to the map. */
-        sectionGroup["name"] = attributes.value("name").toString();
-    }
-    /* Next element... */
-    xml.readNext();
-    /*
-     * We're going to loop over the things because the order might change.
-     * We'll continue the loop until we hit an EndElement named sectionGroup.
-     */
-    while(!(xml.tokenType() == QXmlStreamReader::EndElement &&
-            xml.name() == "sectionGroup")) {
-        if(xml.tokenType() == QXmlStreamReader::StartElement) {
-            /* We add all section filters to Map. */
-            if(xml.name() == "section") {
-                this->addElementDataToMap(xml, sectionGroup);
+    QDomNodeList nodeList = docElem.elementsByTagName("sectionGroup");
+    QDomNodeList siblings = docElem.childNodes();
+
+    for(int i = 0; i < siblings.count(); i++)
+    {
+        //printf("%s\n", siblings.at(i).nodeName().toStdString().c_str());
+
+        if(siblings.at(i).toElement().tagName() == "configSections")
+            continue;
+        QString tabName = siblings.at(i).toElement().tagName();
+        QWidget *tab = new QWidget();
+        QFormLayout* layout = new QFormLayout;
+
+        QDomElement el = siblings.at(i).toElement();
+        QDomNodeList childList = el.childNodes();
+
+        for(int j = 0; j < childList.count(); j++)
+        {
+            QDomNode keyEntries = childList.at(j).firstChild();
+            while(!keyEntries.isNull()) {
+                QDomElement keyData = keyEntries.toElement();
+                QString keyName = keyData.attribute("name");
+                QString keyAlias = keyData.attribute("alias");
+                QString keyList = keyData.attribute("list");
+                if(!keyData.text().isEmpty()){
+                    QString keyText = keyData.text();
+                }
+
+                layout->addRow(keyAlias, new QLineEdit(keyName));
+
+                keyEntries = keyEntries.nextSibling();
             }
         }
-        /* ...and next... */
-        xml.readNext();
-    }
-    return sectionGroup;
-}
 
-void TabDialog::addElementDataToMap(QXmlStreamReader& xml,
-                                      QMap<QString, QString>& map) const {
-    /* We need a start element, like <foo> */
-    if(xml.tokenType() != QXmlStreamReader::StartElement) {
-        return;
-    }
-    /* Let's read the filter */
-
-    QXmlStreamAttributes attributes = xml.attributes();
-    if(!attributes.hasAttribute("name")){
-        return;
-    }
-    /* ...go to the next. */
-    xml.readNext();
-
-    /* Now we can add it to the map.*/
-    map.insert(attributes.value("name").toString(), xml.text().toString());
-}
-
-void TabDialog::addSectionsToUI(QList< QMap<QString,QString> >& sections) {
-
-    while(!sections.isEmpty()) {
-        QWidget *tab = new QWidget();
-
-        QFormLayout* layout = new QFormLayout;
-        QMap<QString,QString> section = sections.takeFirst();
-
-        //QGroupBox* sectionBox = new QGroupBox(tr(sections["name"]));
-        QMap<QString, QString>::const_iterator iter = section.constBegin();
-        while ( iter != section.constEnd()){
-            layout->addRow(iter.key(), new QLineEdit(iter.value()));
-            ++iter;
-        }
         tab->setLayout(layout);
-        this->tabWidget->addTab(tab, section.value("name", "Unknown"));
+        this->tabWidget->addTab(tab, tabName);
     }
 }
