@@ -1,14 +1,15 @@
 #include "fintpconfigwizard.h"
 
-#include <QDomDocument>
 #include <QDomElement>
 #include <QDomNodeList>
+#include <QTextStream>
 
 ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     : QMainWindow(parent)
 {
     tabWidget = new QTabWidget;
     // We load the interface from XML file
+
     parseXML(fileName);
     /*
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -17,9 +18,9 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
     */
     fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
+    fileMenu->addAction(tr("&Save"), this, SLOT(updateFile()), QKeySequence::SaveAs);
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
-
+    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFile(), QKeySequence::Save);
     QPushButton* saveButton = new QPushButton("Save");
     connect(saveButton, SIGNAL(clicked()),this, SLOT(accept()));
 
@@ -41,20 +42,53 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
 
 void ConfigUI::saveFile()
 {
+    QDomDocument docDocument("writeConfig");
+    QDomElement root = docDocument.documentElement();
+    QDomProcessingInstruction instr = docDocument.createProcessingInstruction(
+                        "xml", "version='1.0' encoding='UTF-8'");
+    QDomElement configSetElement = docDocument.createElement("configuration");
+    docDocument.appendChild(instr);
+    docDocument.appendChild(configSetElement);
+
     for(int ii = 0; ii < tabWidget->count(); ++ii)
     {
         QWidget *tab = tabWidget->widget(ii);
         QList<QLineEdit *> allLineEdits = tab->findChildren<QLineEdit *>();
+
+
         if(allLineEdits.count() > 0)
         {
             for(int jj = 0; jj < allLineEdits.count(); ++jj)
             {
-                printf("%s\n", allLineEdits[jj]->text().toStdString().c_str());
+                QDomText newText = docDocument.createTextNode(allLineEdits[jj]->text());
+                QDomElement newNodeTag = docDocument.createElement(QString("key"));
+                newNodeTag.setAttribute("name", allLineEdits[jj]->text());
+                newNodeTag.appendChild(newText);
+                docDocument.appendChild(newNodeTag);
 
+                //printf("%s\n", allLineEdits[jj]->text().toStdString().c_str());
             }
         }
-
     }
+    QString fileName = "output.xml";
+    QFile file(fileName);
+    if (file.open(QFile::WriteOnly | QFile::Truncate)) {
+        QTextStream out(&file);
+        docDocument.save(out, 4);
+    }
+}
+
+QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
+                        const QString &tag,
+                        const QString &value = QString::null )
+{
+    QDomElement el = doc.createElement( tag );
+    node.appendChild( el );
+    if ( !value.isNull() ) {
+        QDomText txt = doc.createTextNode( value );
+        el.appendChild( txt );
+    }
+    return el;
 }
 
 void ConfigUI::parseXML(const QString &fileName) {
@@ -67,8 +101,8 @@ void ConfigUI::parseXML(const QString &fileName) {
                               QMessageBox::Ok);
         return;
     }
-    QDomDocument doc("configFile");
-    if (!doc.setContent(file))
+    //QDomDocument doc("configFile");
+    if (!this->doc.setContent(file))
     {
         QString error = "Error";
         QMessageBox::critical(this,
@@ -128,7 +162,6 @@ void ConfigUI::parseXML(const QString &fileName) {
                 }
                 else
                 {
-
                     layout->addRow(keyAlias, new QLineEdit(keyName));
                 }
                 keyEntries = keyEntries.nextSibling();

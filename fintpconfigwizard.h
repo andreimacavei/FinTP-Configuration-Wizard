@@ -12,6 +12,7 @@
 #include <QtCore/QMap>
 #include <QtCore/QString>
 
+#include <QDomDocument>
 
 QT_BEGIN_NAMESPACE
 class QDialogButtonBox;
@@ -31,11 +32,15 @@ private slots:
 
 public slots:
     void saveFile();
+    void updateFile();
 
 private:
+    QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
+                            const QString &value );
     QTabWidget *tabWidget;
     QDialogButtonBox *buttonBox;
     QMenu *fileMenu;
+    QDomDocument doc;
 };
 
 
