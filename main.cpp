@@ -11,8 +11,8 @@ int main(int argc, char *argv[])
     else
         fileName = QString(argv[0]) + ".xml";
 
-    TabDialog tabdialog(fileName);
-    tabdialog.show();
+    ConfigUI configUi(fileName);
+    configUi.show();
 
     return a.exec();
 }

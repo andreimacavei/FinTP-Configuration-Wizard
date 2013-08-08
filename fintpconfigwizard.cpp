@@ -4,28 +4,60 @@
 #include <QDomElement>
 #include <QDomNodeList>
 
-TabDialog::TabDialog(const QString &fileName, QWidget *parent)
-    : QDialog(parent)
+ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
+    : QMainWindow(parent)
 {
     tabWidget = new QTabWidget;
     // We load the interface from XML file
     parseXML(fileName);
-
+    /*
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    */
+    fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
+    fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
+
+    QPushButton* saveButton = new QPushButton("Save");
+    connect(saveButton, SIGNAL(clicked()),this, SLOT(accept()));
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
+    QScrollArea* scrollArea = new QScrollArea();
+    scrollArea->setWidget(tabWidget);
+    scrollArea->setWidgetResizable(true);
+
     mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
+    mainLayout->addWidget(scrollArea);
     mainLayout->addWidget(tabWidget);
-    mainLayout->addWidget(buttonBox);
-    setLayout(mainLayout);
+    //mainLayout->addWidget(buttonBox);
+
+    setCentralWidget(scrollArea);
+    //setLayout(mainLayout);
 
     setWindowTitle(tr("FinTP Config GUI"));
 }
 
-void TabDialog::parseXML(const QString &fileName) {
+void ConfigUI::saveFile()
+{
+    for(int ii = 0; ii < tabWidget->count(); ++ii)
+    {
+        QWidget *tab = tabWidget->widget(ii);
+        QList<QLineEdit *> allLineEdits = tab->findChildren<QLineEdit *>();
+        if(allLineEdits.count() > 0)
+        {
+            for(int jj = 0; jj < allLineEdits.count(); ++jj)
+            {
+                printf("%s\n", allLineEdits[jj]->text().toStdString().c_str());
+
+            }
+        }
+
+    }
+}
+
+void ConfigUI::parseXML(const QString &fileName) {
     QFile* file = new QFile(fileName);
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString error_message = "Couldn't open " + fileName;
@@ -81,13 +113,24 @@ void TabDialog::parseXML(const QString &fileName) {
                 QDomElement keyData = keyEntries.toElement();
                 QString keyName = keyData.attribute("name");
                 QString keyAlias = keyData.attribute("alias");
-                QString keyList = keyData.attribute("list");
+
                 if(!keyData.text().isEmpty()){
                     QString keyText = keyData.text();
                 }
 
-                layout->addRow(keyAlias, new QLineEdit(keyName));
+                if(!keyData.attribute("list").isEmpty())
+                {
+                    QString keyList = keyData.attribute("list");
+                    QStringList keyValues = keyList.split(',');
+                    QComboBox *comboBox = new QComboBox();
+                    comboBox->addItems(keyValues);
+                    layout->addRow(keyAlias, comboBox);
+                }
+                else
+                {
 
+                    layout->addRow(keyAlias, new QLineEdit(keyName));
+                }
                 keyEntries = keyEntries.nextSibling();
             }
         }

@@ -19,19 +19,23 @@ class QTabWidget;
 QT_END_NAMESPACE
 
 
-class TabDialog : public QDialog
+class ConfigUI: public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit TabDialog(const QString &fileName, QWidget *parent = 0);
+    explicit ConfigUI(const QString &fileName, QWidget *parent = 0);
 
 private slots:
     void parseXML(const QString &fileName);
 
+public slots:
+    void saveFile();
+
 private:
     QTabWidget *tabWidget;
     QDialogButtonBox *buttonBox;
+    QMenu *fileMenu;
 };
 
 
