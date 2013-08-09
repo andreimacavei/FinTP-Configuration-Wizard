@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
         fileName = QString(argv[0]) + ".xml";
 
     ConfigUI configUi(fileName);
+    configUi.setFixedSize(600, 400);
     configUi.show();
 
     return a.exec();

@@ -5,7 +5,6 @@
 #include <QXmlStreamReader>
 #include <QtWidgets>
 
-#include <QtCore/QPointer>
 #include <QtCore/QFile>
 #include <QtCore/QIODevice>
 #include <QtCore/QList>

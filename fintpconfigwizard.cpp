@@ -18,9 +18,10 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
     */
     fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(tr("&Save"), this, SLOT(updateFile()), QKeySequence::SaveAs);
+    fileMenu->addAction(tr("&Save"), this, SLOT(updateFile()), QKeySequence::Save);
+    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFile()), QKeySequence::SaveAs);
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
-    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFile(), QKeySequence::Save);
+
     QPushButton* saveButton = new QPushButton("Save");
     connect(saveButton, SIGNAL(clicked()),this, SLOT(accept()));
 
@@ -42,13 +43,14 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
 
 void ConfigUI::saveFile()
 {
-    QDomDocument docDocument("writeConfig");
+    QDomDocument docDocument("XmlConfigUI");
     QDomElement root = docDocument.documentElement();
     QDomProcessingInstruction instr = docDocument.createProcessingInstruction(
                         "xml", "version='1.0' encoding='UTF-8'");
     QDomElement configSetElement = docDocument.createElement("configuration");
     docDocument.appendChild(instr);
-    docDocument.appendChild(configSetElement);
+    root.appendChild(configSetElement);
+    docDocument.appendChild(root);
 
     for(int ii = 0; ii < tabWidget->count(); ++ii)
     {
@@ -76,6 +78,11 @@ void ConfigUI::saveFile()
         QTextStream out(&file);
         docDocument.save(out, 4);
     }
+}
+
+void ConfigUI::updateFile()
+{
+
 }
 
 QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
