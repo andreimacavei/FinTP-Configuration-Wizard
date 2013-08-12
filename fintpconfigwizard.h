@@ -30,6 +30,7 @@ private slots:
     void parseXML(const QString &fileName);
 
 public slots:
+    void openFile();
     void saveFile();
     void updateFile();
 

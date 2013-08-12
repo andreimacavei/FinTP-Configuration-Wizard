@@ -18,25 +18,31 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
     */
     fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
     fileMenu->addAction(tr("&Save"), this, SLOT(updateFile()), QKeySequence::Save);
     fileMenu->addAction(tr("Save &As"), this, SLOT(saveFile()), QKeySequence::SaveAs);
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
+/*
     QPushButton* saveButton = new QPushButton("Save");
     connect(saveButton, SIGNAL(clicked()),this, SLOT(accept()));
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
+*/
+
     QScrollArea* scrollArea = new QScrollArea();
     scrollArea->setWidget(tabWidget);
     scrollArea->setWidgetResizable(true);
 
+/*
     mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
     mainLayout->addWidget(scrollArea);
     mainLayout->addWidget(tabWidget);
-    //mainLayout->addWidget(buttonBox);
+    mainLayout->addWidget(buttonBox);
+    setLayout(mainLayout);
+*/
 
     setCentralWidget(scrollArea);
-    //setLayout(mainLayout);
 
     setWindowTitle(tr("FinTP Config GUI"));
 }
@@ -64,11 +70,9 @@ void ConfigUI::saveFile()
             {
                 QDomText newText = docDocument.createTextNode(allLineEdits[jj]->text());
                 QDomElement newNodeTag = docDocument.createElement(QString("key"));
-                newNodeTag.setAttribute("name", allLineEdits[jj]->text());
+                //newNodeTag.setAttribute("alias", allLineEdits[jj]->text());
                 newNodeTag.appendChild(newText);
                 docDocument.appendChild(newNodeTag);
-
-                //printf("%s\n", allLineEdits[jj]->text().toStdString().c_str());
             }
         }
     }
@@ -82,6 +86,25 @@ void ConfigUI::saveFile()
 
 void ConfigUI::updateFile()
 {
+
+}
+
+void ConfigUI::openFile()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+                            tr("Text Files (*.txt);;C++ Files (*.cpp *.h);;Xml Files (*.xml *.xslt);;All Files (*.*)"));
+    if (fileName != "") {
+        ConfigUI::parseXML(fileName);
+        /*QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::critical(this, tr("Error"), tr("Could not open file"));
+            return;
+        }
+        QTextStream in(&file);
+        textEdit->setText(in.readAll());
+        file.close();
+        */
+     }
 
 }
 
@@ -136,7 +159,6 @@ void ConfigUI::parseXML(const QString &fileName) {
 
     for(int i = 0; i < siblings.count(); i++)
     {
-        //printf("%s\n", siblings.at(i).nodeName().toStdString().c_str());
 
         if(siblings.at(i).toElement().tagName() == "configSections")
             continue;
@@ -154,10 +176,7 @@ void ConfigUI::parseXML(const QString &fileName) {
                 QDomElement keyData = keyEntries.toElement();
                 QString keyName = keyData.attribute("name");
                 QString keyAlias = keyData.attribute("alias");
-
-                if(!keyData.text().isEmpty()){
-                    QString keyText = keyData.text();
-                }
+                QString keyText = keyData.text();
 
                 if(!keyData.attribute("list").isEmpty())
                 {
@@ -169,7 +188,7 @@ void ConfigUI::parseXML(const QString &fileName) {
                 }
                 else
                 {
-                    layout->addRow(keyAlias, new QLineEdit(keyName));
+                    layout->addRow(keyAlias, new QLineEdit(keyText));
                 }
                 keyEntries = keyEntries.nextSibling();
             }
