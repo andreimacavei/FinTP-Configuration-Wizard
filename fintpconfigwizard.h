@@ -27,7 +27,8 @@ public:
     explicit ConfigUI(const QString &fileName, QWidget *parent = 0);
 
 private slots:
-    void parseXML(const QString &fileName);
+    void parseXML(const QDomDocument &doc);
+    void resetUI();
 
 public slots:
     void openFile();
@@ -37,9 +38,11 @@ public slots:
 private:
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
+
     QTabWidget *tabWidget;
     QDialogButtonBox *buttonBox;
     QMenu *fileMenu;
+    QString xmlPath;
     QDomDocument doc;
 };
 

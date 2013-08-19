@@ -8,46 +8,37 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     : QMainWindow(parent)
 {
     tabWidget = new QTabWidget;
-    // We load the interface from XML file
+    QFile* file = new QFile(fileName);
+    if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString error_message = "Couldn't open " + fileName;
+        QMessageBox::critical(this, "TabDialog::parseXML", error_message, QMessageBox::Ok);
+        return;
+    }
+    if (!this->doc.setContent(file)){
+        QMessageBox::critical(this, "TabDialog::parseXML", "Unable to set DOM parser", QMessageBox::Ok);
+        return;
+    }
+    parseXML(doc);
 
-    parseXML(fileName);
-    /*
-    buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
-    connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    */
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
     fileMenu->addAction(tr("&Save"), this, SLOT(updateFile()), QKeySequence::Save);
     fileMenu->addAction(tr("Save &As"), this, SLOT(saveFile()), QKeySequence::SaveAs);
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
-/*
-    QPushButton* saveButton = new QPushButton("Save");
-    connect(saveButton, SIGNAL(clicked()),this, SLOT(accept()));
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-*/
-
     QScrollArea* scrollArea = new QScrollArea();
     scrollArea->setWidget(tabWidget);
     scrollArea->setWidgetResizable(true);
 
-/*
-    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
-    mainLayout->addWidget(scrollArea);
-    mainLayout->addWidget(tabWidget);
-    mainLayout->addWidget(buttonBox);
-    setLayout(mainLayout);
-*/
-
     setCentralWidget(scrollArea);
-
     setWindowTitle(tr("FinTP Config GUI"));
 }
 
 void ConfigUI::saveFile()
+{
+}
+
+void ConfigUI::updateFile()
 {
     QDomDocument docDocument("XmlConfigUI");
     QDomElement root = docDocument.documentElement();
@@ -64,10 +55,8 @@ void ConfigUI::saveFile()
         QList<QLineEdit *> allLineEdits = tab->findChildren<QLineEdit *>();
 
 
-        if(allLineEdits.count() > 0)
-        {
-            for(int jj = 0; jj < allLineEdits.count(); ++jj)
-            {
+        if(allLineEdits.count() > 0){
+            for(int jj = 0; jj < allLineEdits.count(); ++jj){
                 QDomText newText = docDocument.createTextNode(allLineEdits[jj]->text());
                 QDomElement newNodeTag = docDocument.createElement(QString("key"));
                 //newNodeTag.setAttribute("alias", allLineEdits[jj]->text());
@@ -84,28 +73,43 @@ void ConfigUI::saveFile()
     }
 }
 
-void ConfigUI::updateFile()
+void ConfigUI::openFile()
 {
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), xmlPath,
+                            tr("Xml Files (*.xml *.xslt);;HTML files (*.html);;"
+                               "User Interface files (*.ui);;All Files (*.*)"));
+    if (!filePath.isEmpty()) {
+        QFile file(filePath);
+        if (file.open(QIODevice::ReadOnly)) {
+            QDomDocument document;
+            if (document.setContent(&file)) {
+                resetUI();
+                parseXML(document);
+                xmlPath = filePath;
+            }
+            file.close();
+        }
+    }
 
 }
 
-void ConfigUI::openFile()
+void ConfigUI::resetUI()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
-                            tr("Text Files (*.txt);;C++ Files (*.cpp *.h);;Xml Files (*.xml *.xslt);;All Files (*.*)"));
-    if (fileName != "") {
-        ConfigUI::parseXML(fileName);
-        /*QFile file(fileName);
-        if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, tr("Error"), tr("Could not open file"));
-            return;
+    for(int ii = 0; ii < tabWidget->count(); ++ii)
+    {
+        QWidget *tab = tabWidget->widget(ii);
+        if ( tab->layout() != NULL )
+        {
+            QLayoutItem* item;
+            while ( ( item = tab->layout()->takeAt(0) ) != NULL )
+            {
+                delete item->widget();
+                delete item;
+            }
+            delete tab->layout();
         }
-        QTextStream in(&file);
-        textEdit->setText(in.readAll());
-        file.close();
-        */
-     }
-
+        delete tab;
+    }
 }
 
 QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
@@ -121,42 +125,16 @@ QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
     return el;
 }
 
-void ConfigUI::parseXML(const QString &fileName) {
-    QFile* file = new QFile(fileName);
-    if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString error_message = "Couldn't open " + fileName;
-        QMessageBox::critical(this,
-                              "TabDialog::parseXML",
-                              error_message,
-                              QMessageBox::Ok);
-        return;
-    }
-    //QDomDocument doc("configFile");
-    if (!this->doc.setContent(file))
-    {
-        QString error = "Error";
-        QMessageBox::critical(this,
-                              "TabDialog::parseXML",
-                              error,
-                              QMessageBox::Ok);
-        return;
-    }
+void ConfigUI::parseXML(const QDomDocument &document) {
 
-    QDomElement docElem = doc.documentElement();
+    QDomElement docElem = document.documentElement();
     QString rootTag = docElem.tagName();
-
-    if(rootTag != "configuration")
-    {
+    if(rootTag != "configuration"){
         QString error = "XML file with bad format";
-        QMessageBox::critical(this,
-                              "TabDialog::parseXML",
-                              error,
-                              QMessageBox::Ok);
+        QMessageBox::critical(this, "TabDialog::parseXML", error, QMessageBox::Ok);
     }
 
-    QDomNodeList nodeList = docElem.elementsByTagName("sectionGroup");
     QDomNodeList siblings = docElem.childNodes();
-
     for(int i = 0; i < siblings.count(); i++)
     {
 
@@ -172,22 +150,21 @@ void ConfigUI::parseXML(const QString &fileName) {
         for(int j = 0; j < childList.count(); j++)
         {
             QDomNode keyEntries = childList.at(j).firstChild();
-            while(!keyEntries.isNull()) {
+            while(!keyEntries.isNull())
+            {
                 QDomElement keyData = keyEntries.toElement();
                 QString keyName = keyData.attribute("name");
                 QString keyAlias = keyData.attribute("alias");
                 QString keyText = keyData.text();
 
-                if(!keyData.attribute("list").isEmpty())
-                {
+                if(!keyData.attribute("list").isEmpty()){
                     QString keyList = keyData.attribute("list");
                     QStringList keyValues = keyList.split(',');
                     QComboBox *comboBox = new QComboBox();
                     comboBox->addItems(keyValues);
                     layout->addRow(keyAlias, comboBox);
                 }
-                else
-                {
+                else{
                     layout->addRow(keyAlias, new QLineEdit(keyText));
                 }
                 keyEntries = keyEntries.nextSibling();
