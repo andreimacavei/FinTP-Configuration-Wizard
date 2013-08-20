@@ -3,7 +3,7 @@
 #include <QDomElement>
 #include <QDomNodeList>
 #include <QTextStream>
-
+#include <iostream>
 ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     : QMainWindow(parent)
 {
@@ -18,7 +18,7 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
         QMessageBox::critical(this, "TabDialog::parseXML", "Unable to set DOM parser", QMessageBox::Ok);
         return;
     }
-    parseXML(doc);
+    //parseXML(doc);
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
@@ -95,9 +95,9 @@ void ConfigUI::openFile()
 
 void ConfigUI::resetUI()
 {
-    for(int ii = 0; ii < tabWidget->count(); ++ii)
+    while(tabWidget->count() > 0)
     {
-        QWidget *tab = tabWidget->widget(ii);
+        QWidget *tab = tabWidget->widget(0);
         if ( tab->layout() != NULL )
         {
             QLayoutItem* item;
