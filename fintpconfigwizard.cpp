@@ -69,11 +69,11 @@ void ConfigUI::saveFileAs()
 
         if ( tab->layout() != NULL )
         {
+            QDomElement keyElem;
             for(int jj = 0; jj < tab->layout()->count(); ++jj)
             {
                 QLayoutItem* item = tab->layout()->itemAt(jj);
                 QString widgetType = QString(item->widget()->metaObject()->className());
-                QDomElement keyElem;
                 if(widgetType == "QLabel")
                 {
                     keyElem = docDocument.createElement("key");
@@ -88,6 +88,16 @@ void ConfigUI::saveFileAs()
                         QString lineEdit = dynamic_cast<QLineEdit*>(item->widget())->text();
                         QDomText fieldText = docDocument.createTextNode(lineEdit);
                         keyElem.appendChild(fieldText);
+                    }
+                    else{
+                        /* The widget left can only be a ComboBox*/
+                        QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
+                        QStringList list;
+                        for(int k = 0; k < comboBox->count(); ++k){
+                            list.append(comboBox->itemText(k));
+                        }
+                        QString listAtrib = list.join(',');
+                        keyElem.setAttribute("list", listAtrib);
                     }
 
                 }
