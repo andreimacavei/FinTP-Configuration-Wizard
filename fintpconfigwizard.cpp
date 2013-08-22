@@ -125,14 +125,15 @@ void ConfigUI::openFile()
 
 void ConfigUI::resetUI()
 {
-    for(int ii = 0; ii < tabWidget->count(); ++ii)
+    while(tabWidget->count() > 0)
     {
-        QWidget *tab = tabWidget->widget(ii);
+        QWidget *tab = tabWidget->widget(0);
         if ( tab->layout() != NULL )
         {
             QLayoutItem* item;
-            while ( ( item = tab->layout()->takeAt(0) ) != NULL )
+            while (tab->layout()->count() > 0)
             {
+                item = tab->layout()->takeAt(0);
                 delete item->widget();
                 delete item;
             }
