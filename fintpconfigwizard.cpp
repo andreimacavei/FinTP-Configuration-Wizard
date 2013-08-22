@@ -38,62 +38,61 @@ void ConfigUI::saveFile()
 {
 }
 
+QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
+                        const QString &tag,
+                        const QString &value = QString::null )
+{
+    QDomElement el = doc.createElement( tag );
+    node.appendChild( el );
+    if ( !value.isNull() ) {
+        QDomText txt = doc.createTextNode( value );
+        el.appendChild( txt );
+    }
+    return el;
+}
+
 void ConfigUI::saveFileAs()
 {
     QDomDocument docDocument;
-    //QDomElement root = docDocument.documentElement();
     QDomProcessingInstruction instr = docDocument.createProcessingInstruction(
                         "xml", "version='1.0' encoding='UTF-8'");
     docDocument.appendChild(instr);
-    QDomElement configEl = docDocument.createElement("configuration");
-    docDocument.appendChild(configEl);
-    //root.appendChild(configSetElement);
-    //docDocument.appendChild(root);
+    QDomElement configElem = docDocument.createElement("configuration");
+    docDocument.appendChild(configElem);
 
     for(int ii = 0; ii < tabWidget->count(); ++ii)
     {
         QWidget *tab = tabWidget->widget(ii);
-        QString tabName = tab->accessibleName();
+        QString tabName = tabWidget->tabText(ii);
         QDomElement tabElem = docDocument.createElement(tabName);
-        docDocument.appendChild(tabElem);
+        configElem.appendChild(tabElem);
+
         if ( tab->layout() != NULL )
         {
-            int jj = 0;
-            int n = tab->layout()->count();
-            while ( jj < n )
+            for(int jj = 0; jj < tab->layout()->count(); ++jj)
             {
-                QLayoutItem* item;
-                item = tab->layout()->itemAt(jj);
-                QString widgetName = item->metaObject()->className();
-                QDomElement keyElem = NULL;
-
-                if(widgetName == "QLabel"){
+                QLayoutItem* item = tab->layout()->itemAt(jj);
+                QString widgetType = QString(item->widget()->metaObject()->className());
+                QDomElement keyElem;
+                if(widgetType == "QLabel")
+                {
                     keyElem = docDocument.createElement("key");
-                    keyElem.setAttribute("alias", widgetName);
+                    tabElem.appendChild(keyElem);
+                    QString labelText = dynamic_cast<QLabel*>(item->widget())->text();
+                    keyElem.setAttribute("alias", labelText);
                 }
-                else{
-                    if(widgetName == "QLineEdit" && keyElem != NULL)
+                else
+                {
+                    if(widgetType == "QLineEdit")
                     {
-                        QDomText fieldText = docDocument.createTextNode(item->text());
+                        QString lineEdit = dynamic_cast<QLineEdit*>(item->widget())->text();
+                        QDomText fieldText = docDocument.createTextNode(lineEdit);
                         keyElem.appendChild(fieldText);
-                        tabElem.appendChild(keyElem);
                     }
 
                 }
-                ++jj;
-
             }
         }
-       /* QList<QLineEdit *> allLineEdits = tab->findChildren<QLineEdit *>();
-        if(allLineEdits.count() > 0){
-            for(int jj = 0; jj < allLineEdits.count(); ++jj){
-                QDomText newText = docDocument.createTextNode(allLineEdits[jj]->text());
-                QDomElement newNodeTag = docDocument.createElement(QString("key"));
-                //newNodeTag.setAttribute("alias", allLineEdits[jj]->text());
-                newNodeTag.appendChild(newText);
-                docDocument.appendChild(newNodeTag);
-            }
-        }*/
     }
     QString fileName = "output.xml";
     QFile file(fileName);
@@ -143,19 +142,6 @@ void ConfigUI::resetUI()
     }
 }
 
-QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
-                        const QString &tag,
-                        const QString &value = QString::null )
-{
-    QDomElement el = doc.createElement( tag );
-    node.appendChild( el );
-    if ( !value.isNull() ) {
-        QDomText txt = doc.createTextNode( value );
-        el.appendChild( txt );
-    }
-    return el;
-}
-
 void ConfigUI::parseXML(const QDomDocument &document) {
 
     QDomElement docElem = document.documentElement();
@@ -180,10 +166,10 @@ void ConfigUI::parseXML(const QDomDocument &document) {
 
         for(int j = 0; j < childList.count(); j++)
         {
-            QDomNode keyEntries = childList.at(j).firstChild();
-            while(!keyEntries.isNull())
+            QDomNode keyNode = childList.at(j).firstChild();
+            while(!keyNode.isNull())
             {
-                QDomElement keyData = keyEntries.toElement();
+                QDomElement keyData = keyNode.toElement();
                 QString keyName = keyData.attribute("name");
                 QString keyAlias = keyData.attribute("alias");
                 QString keyText = keyData.text();
@@ -198,7 +184,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                 else{
                     layout->addRow(keyAlias, new QLineEdit(keyText));
                 }
-                keyEntries = keyEntries.nextSibling();
+                keyNode = keyNode.nextSibling();
             }
         }
 
