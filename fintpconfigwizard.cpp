@@ -22,8 +22,8 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
-    fileMenu->addAction(tr("&Save"), this, SLOT(updateFile()), QKeySequence::Save);
-    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFile()), QKeySequence::SaveAs);
+    fileMenu->addAction(tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
+    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFileAs()), QKeySequence::SaveAs);
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
     QScrollArea* scrollArea = new QScrollArea();
@@ -38,23 +38,53 @@ void ConfigUI::saveFile()
 {
 }
 
-void ConfigUI::updateFile()
+void ConfigUI::saveFileAs()
 {
-    QDomDocument docDocument("XmlConfigUI");
-    QDomElement root = docDocument.documentElement();
+    QDomDocument docDocument;
+    //QDomElement root = docDocument.documentElement();
     QDomProcessingInstruction instr = docDocument.createProcessingInstruction(
                         "xml", "version='1.0' encoding='UTF-8'");
-    QDomElement configSetElement = docDocument.createElement("configuration");
     docDocument.appendChild(instr);
-    root.appendChild(configSetElement);
-    docDocument.appendChild(root);
+    QDomElement configEl = docDocument.createElement("configuration");
+    docDocument.appendChild(configEl);
+    //root.appendChild(configSetElement);
+    //docDocument.appendChild(root);
 
     for(int ii = 0; ii < tabWidget->count(); ++ii)
     {
         QWidget *tab = tabWidget->widget(ii);
-        QList<QLineEdit *> allLineEdits = tab->findChildren<QLineEdit *>();
+        QString tabName = tab->accessibleName();
+        QDomElement tabElem = docDocument.createElement(tabName);
+        docDocument.appendChild(tabElem);
+        if ( tab->layout() != NULL )
+        {
+            int jj = 0;
+            int n = tab->layout()->count();
+            while ( jj < n )
+            {
+                QLayoutItem* item;
+                item = tab->layout()->itemAt(jj);
+                QString widgetName = item->metaObject()->className();
+                QDomElement keyElem = NULL;
 
+                if(widgetName == "QLabel"){
+                    keyElem = docDocument.createElement("key");
+                    keyElem.setAttribute("alias", widgetName);
+                }
+                else{
+                    if(widgetName == "QLineEdit" && keyElem != NULL)
+                    {
+                        QDomText fieldText = docDocument.createTextNode(item->text());
+                        keyElem.appendChild(fieldText);
+                        tabElem.appendChild(keyElem);
+                    }
 
+                }
+                ++jj;
+
+            }
+        }
+       /* QList<QLineEdit *> allLineEdits = tab->findChildren<QLineEdit *>();
         if(allLineEdits.count() > 0){
             for(int jj = 0; jj < allLineEdits.count(); ++jj){
                 QDomText newText = docDocument.createTextNode(allLineEdits[jj]->text());
@@ -63,7 +93,7 @@ void ConfigUI::updateFile()
                 newNodeTag.appendChild(newText);
                 docDocument.appendChild(newNodeTag);
             }
-        }
+        }*/
     }
     QString fileName = "output.xml";
     QFile file(fileName);
@@ -137,10 +167,10 @@ void ConfigUI::parseXML(const QDomDocument &document) {
     QDomNodeList siblings = docElem.childNodes();
     for(int i = 0; i < siblings.count(); i++)
     {
-
-        if(siblings.at(i).toElement().tagName() == "configSections")
-            continue;
         QString tabName = siblings.at(i).toElement().tagName();
+        if(tabName == "configSections")
+            continue;
+
         QWidget *tab = new QWidget();
         QFormLayout* layout = new QFormLayout;
 

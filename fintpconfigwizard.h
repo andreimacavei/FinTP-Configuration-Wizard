@@ -33,7 +33,7 @@ private slots:
 public slots:
     void openFile();
     void saveFile();
-    void updateFile();
+    void saveFileAs();
 
 private:
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
