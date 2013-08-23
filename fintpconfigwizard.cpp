@@ -105,7 +105,8 @@ void ConfigUI::saveFileAs()
         }
     }
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
-                tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html"));
+                tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html);;"
+                   "All Files (*.*)"));
     if (!fileName.isEmpty()) {
         QFile file(fileName);
         if (file.open(QFile::WriteOnly | QFile::Truncate)) {
