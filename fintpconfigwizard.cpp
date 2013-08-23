@@ -104,11 +104,14 @@ void ConfigUI::saveFileAs()
             }
         }
     }
-    QString fileName = "output.xml";
-    QFile file(fileName);
-    if (file.open(QFile::WriteOnly | QFile::Truncate)) {
-        QTextStream out(&file);
-        docDocument.save(out, 4);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
+                tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html"));
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QFile::WriteOnly | QFile::Truncate)) {
+            QTextStream out(&file);
+            docDocument.save(out, 4);
+        }
     }
 }
 
