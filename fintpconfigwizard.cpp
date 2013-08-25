@@ -90,14 +90,15 @@ void ConfigUI::saveFileAs()
                         keyElem.appendChild(fieldText);
                     }
                     else{
-                        /* The widget left can only be a ComboBox*/
+                        /* Then widget is a ComboBox*/
                         QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
                         QStringList list;
                         for(int k = 0; k < comboBox->count(); ++k){
                             list.append(comboBox->itemText(k));
                         }
-                        QString listAtrib = list.join(',');
-                        keyElem.setAttribute("list", listAtrib);
+                        keyElem.setAttribute("list", list.join(','));
+                        QDomText currentItem = docDocument.createTextNode(comboBox->currentText());
+                        keyElem.appendChild(currentItem);
                     }
 
                 }
@@ -161,7 +162,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
     QDomElement docElem = document.documentElement();
     QString rootTag = docElem.tagName();
     if(rootTag != "configuration"){
-        QString error = "XML file with bad format";
+        QString error = "Missing root tag <configuration>";
         QMessageBox::critical(this, "TabDialog::parseXML", error, QMessageBox::Ok);
     }
 
@@ -180,7 +181,12 @@ void ConfigUI::parseXML(const QDomDocument &document) {
 
         for(int j = 0; j < childList.count(); j++)
         {
+//            QString filterName = childList.at(j).toElement().tagName();
             QDomNode keyNode = childList.at(j).firstChild();
+//            QGroupBox* filterSection = new QGroupBox(filterName);
+//            layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
+//            layout->addWidget(filterSection);
+
             while(!keyNode.isNull())
             {
                 QDomElement keyData = keyNode.toElement();
