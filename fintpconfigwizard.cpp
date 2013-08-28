@@ -69,15 +69,23 @@ void ConfigUI::saveFileAs()
 
         if ( tab->layout() != NULL )
         {
+            QDomElement filterElem;
             QDomElement keyElem;
             for(int jj = 0; jj < tab->layout()->count(); ++jj)
             {
                 QLayoutItem* item = tab->layout()->itemAt(jj);
                 QString widgetType = QString(item->widget()->metaObject()->className());
+                if(widgetType == "QGroupBox")
+                {
+                    QString filterName = dynamic_cast<QGroupBox*>(item->widget())->title();
+                    filterElem = docDocument.createElement(filterName);
+                    tabElem.appendChild(filterElem);
+                    continue;
+                }
                 if(widgetType == "QLabel")
                 {
                     keyElem = docDocument.createElement("key");
-                    tabElem.appendChild(keyElem);
+                    filterElem.appendChild(keyElem);
                     QString labelText = dynamic_cast<QLabel*>(item->widget())->text();
                     keyElem.setAttribute("alias", labelText);
                 }
@@ -175,18 +183,17 @@ void ConfigUI::parseXML(const QDomDocument &document) {
 
         QWidget *tab = new QWidget();
         QFormLayout* layout = new QFormLayout;
-
         QDomElement el = siblings.at(i).toElement();
         QDomNodeList childList = el.childNodes();
 
+        layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
         for(int j = 0; j < childList.count(); j++)
         {
-//            QString filterName = childList.at(j).toElement().tagName();
             QDomNode keyNode = childList.at(j).firstChild();
-//            QGroupBox* filterSection = new QGroupBox(filterName);
-//            layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
-//            layout->addWidget(filterSection);
-
+            QString filterName = childList.at(j).toElement().tagName();
+            QGroupBox* filterSection = new QGroupBox(filterName);
+            layout->addWidget(filterSection);
+//            QLayoutItem *layoutItem = new QLayoutItem(Qt::AlignLeft | Qt::AlignTop);
             while(!keyNode.isNull())
             {
                 QDomElement keyData = keyNode.toElement();
@@ -206,8 +213,8 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                 }
                 keyNode = keyNode.nextSibling();
             }
+//            filterSection->setLayout(layout);
         }
-
         tab->setLayout(layout);
         this->tabWidget->addTab(tab, tabName);
     }
