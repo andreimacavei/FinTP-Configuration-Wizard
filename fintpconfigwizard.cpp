@@ -193,7 +193,9 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             QString filterName = childList.at(j).toElement().tagName();
             QGroupBox* filterSection = new QGroupBox(filterName);
             layout->addWidget(filterSection);
-//            QLayoutItem *layoutItem = new QLayoutItem(Qt::AlignLeft | Qt::AlignTop);
+            /*
+             * TODO : Update QGroupBox widget to Flat style
+             */
             while(!keyNode.isNull())
             {
                 QDomElement keyData = keyNode.toElement();
@@ -206,6 +208,8 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                     QStringList keyValues = keyList.split(',');
                     QComboBox *comboBox = new QComboBox();
                     comboBox->addItems(keyValues);
+                    if (!keyText.isNull())
+                        comboBox->setCurrentText(keyText);
                     layout->addRow(keyAlias, comboBox);
                 }
                 else{
@@ -213,7 +217,6 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                 }
                 keyNode = keyNode.nextSibling();
             }
-//            filterSection->setLayout(layout);
         }
         tab->setLayout(layout);
         this->tabWidget->addTab(tab, tabName);
