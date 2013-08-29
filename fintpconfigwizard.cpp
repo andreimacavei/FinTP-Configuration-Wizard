@@ -77,7 +77,7 @@ void ConfigUI::saveFileAs()
                 QString widgetType = QString(item->widget()->metaObject()->className());
                 if(widgetType == "QGroupBox")
                 {
-                    QString filterName = dynamic_cast<QGroupBox*>(item->widget())->title();
+                    QString filterName = static_cast<QGroupBox*>(item->widget())->title();
                     filterElem = docDocument.createElement(filterName);
                     tabElem.appendChild(filterElem);
                     continue;
@@ -86,20 +86,24 @@ void ConfigUI::saveFileAs()
                 {
                     keyElem = docDocument.createElement("key");
                     filterElem.appendChild(keyElem);
-                    QString labelText = dynamic_cast<QLabel*>(item->widget())->text();
+                    QString labelText = static_cast<QLabel*>(item->widget())->text();
                     keyElem.setAttribute("alias", labelText);
                 }
                 else
                 {
                     if(widgetType == "QLineEdit")
                     {
-                        QString lineEdit = dynamic_cast<QLineEdit*>(item->widget())->text();
+                        QString lineEdit = static_cast<QLineEdit*>(item->widget())->text();
                         QDomText fieldText = docDocument.createTextNode(lineEdit);
                         keyElem.appendChild(fieldText);
                     }
                     else{
                         /* Then widget is a ComboBox*/
                         QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
+                        if (!comboBox){
+                            QString error = "Unknown Widget";
+                            QMessageBox::critical(this, "TabDialog::saveFileAs", error, QMessageBox::Ok);
+                        }
                         QStringList list;
                         for(int k = 0; k < comboBox->count(); ++k){
                             list.append(comboBox->itemText(k));
