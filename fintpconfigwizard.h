@@ -40,6 +40,7 @@ private:
                             const QString &value );
 
     QTabWidget *tabWidget;
+    QList<QWidget*> removedTabs;
     QDialogButtonBox *buttonBox;
     QMenu *fileMenu;
     QString xmlPath;

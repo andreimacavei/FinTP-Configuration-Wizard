@@ -60,6 +60,8 @@ void ConfigUI::saveFileAs()
     QDomElement configElem = docDocument.createElement("configuration");
     docDocument.appendChild(configElem);
 
+    QWidget *removedTab = (QWidget*)removedTabs.at(0);
+    tabWidget->insertTab(0, removedTab, "configSections");
     for(int ii = 0; ii < tabWidget->count(); ++ii)
     {
         QWidget *tab = tabWidget->widget(ii);
@@ -67,6 +69,9 @@ void ConfigUI::saveFileAs()
         QDomElement tabElem = docDocument.createElement(tabName);
         configElem.appendChild(tabElem);
 
+        if (ii == 0){
+            tabElem.setAttribute("name", removedTab->objectName());
+        }
         if ( tab->layout() != NULL )
         {
             QDomElement filterElem;
@@ -78,16 +83,30 @@ void ConfigUI::saveFileAs()
                 if(widgetType == "QGroupBox")
                 {
                     QString filterName = dynamic_cast<QGroupBox*>(item->widget())->title();
-                    filterElem = docDocument.createElement(filterName);
+                    if (ii == 0){
+                        filterElem = docDocument.createElement("sectionGroup");
+                        filterElem.setAttribute("name", filterName);
+                    }
+                    else{
+                        filterElem = docDocument.createElement(filterName);
+                    }
                     tabElem.appendChild(filterElem);
                     continue;
                 }
                 if(widgetType == "QLabel")
                 {
-                    keyElem = docDocument.createElement("key");
+                    QString atrName;
+                    if (tabName == "configSection"){
+                        keyElem = docDocument.createElement("section");
+                        atrName = "name";
+                    }
+                    else{
+                        keyElem = docDocument.createElement("key");
+                        atrName = "alias";
+                    }
                     filterElem.appendChild(keyElem);
                     QString labelText = dynamic_cast<QLabel*>(item->widget())->text();
-                    keyElem.setAttribute("alias", labelText);
+                    keyElem.setAttribute(atrName, labelText);
                 }
                 else
                 {
@@ -113,6 +132,8 @@ void ConfigUI::saveFileAs()
             }
         }
     }
+    tabWidget->removeTab(0);
+    removedTabs.removeFirst();
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
                 tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html);;"
                    "All Files (*.*)"));
@@ -174,23 +195,24 @@ void ConfigUI::parseXML(const QDomDocument &document) {
         QMessageBox::critical(this, "TabDialog::parseXML", error, QMessageBox::Ok);
     }
 
+    int pos = 0;
     QDomNodeList siblings = docElem.childNodes();
     for(int i = 0; i < siblings.count(); i++)
     {
         QString tabName = siblings.at(i).toElement().tagName();
-        if(tabName == "configSections")
-            continue;
-
         QWidget *tab = new QWidget();
         QFormLayout* layout = new QFormLayout;
         QDomElement el = siblings.at(i).toElement();
         QDomNodeList childList = el.childNodes();
-
         layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
+
         for(int j = 0; j < childList.count(); j++)
         {
             QDomNode keyNode = childList.at(j).firstChild();
             QString filterName = childList.at(j).toElement().tagName();
+            if (filterName == "sectionGroup"){
+                filterName = childList.at(j).toElement().attribute("name");
+            }
             QGroupBox* filterSection = new QGroupBox(filterName);
             layout->addWidget(filterSection);
             /*
@@ -213,6 +235,10 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                     layout->addRow(keyAlias, comboBox);
                 }
                 else{
+                    if (keyData.tagName() == "section")
+                    {
+                        keyAlias = keyName;
+                    }
                     layout->addRow(keyAlias, new QLineEdit(keyText));
                 }
                 keyNode = keyNode.nextSibling();
@@ -220,5 +246,11 @@ void ConfigUI::parseXML(const QDomDocument &document) {
         }
         tab->setLayout(layout);
         this->tabWidget->addTab(tab, tabName);
+        if(tabName == "configSections"){
+            tab->setObjectName(siblings.at(i).toElement().attribute("name"));
+            removedTabs.append(tab);
+            this->tabWidget->removeTab(pos);
+        }
+        pos++;
     }
 }
