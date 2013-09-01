@@ -90,6 +90,7 @@ void ConfigUI::saveFileAs()
                     else{
                         filterElem = docDocument.createElement(filterName);
                     }
+                    filterElem = docDocument.createElement(filterName);
                     tabElem.appendChild(filterElem);
                     continue;
                 }
@@ -107,6 +108,7 @@ void ConfigUI::saveFileAs()
                     filterElem.appendChild(keyElem);
                     QString labelText = static_cast<QLabel*>(item->widget())->text();
                     keyElem.setAttribute(atrName, labelText);
+                    keyElem.setAttribute("alias", labelText);
                 }
                 else
                 {
