@@ -10,8 +10,8 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     tabWidget = new QTabWidget;
     QFile* file = new QFile(fileName);
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString error_message = "Couldn't open " + fileName;
-        QMessageBox::critical(this, "TabDialog::parseXML", error_message, QMessageBox::Ok);
+        QString errorMessage = "Couldn't open " + fileName;
+        QMessageBox::critical(this, "TabDialog::parseXML", errorMessage, QMessageBox::Ok);
         return;
     }
     if (!this->doc.setContent(file)){
@@ -38,6 +38,22 @@ void ConfigUI::saveFile()
 {
 }
 
+void ConfigUI::writeFileStream(QDomDocument doc, QString fileName = NULL)
+{
+    if(fileName.isEmpty()){
+        fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
+                    tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html);;"
+                           "All Files (*.*)"));
+    }
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QFile::WriteOnly | QFile::Truncate)) {
+            QTextStream out(&file);
+            doc.save(out, 4);
+        }
+    }
+}
+
 QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
                         const QString &tag,
                         const QString &value = QString::null )
@@ -51,22 +67,22 @@ QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
     return el;
 }
 
-void ConfigUI::saveFileAs()
+void ConfigUI::saveFileAs(QString fileName = NULL)
 {
-    QDomDocument docDocument;
-    QDomProcessingInstruction instr = docDocument.createProcessingInstruction(
+    QDomDocument domDocument;
+    QDomProcessingInstruction instr = domDocument.createProcessingInstruction(
                         "xml", "version='1.0' encoding='UTF-8'");
-    docDocument.appendChild(instr);
-    QDomElement configElem = docDocument.createElement("configuration");
-    docDocument.appendChild(configElem);
+    domDocument.appendChild(instr);
+    QDomElement configElem = domDocument.createElement("configuration");
+    domDocument.appendChild(configElem);
 
-    QWidget *removedTab = (QWidget*)removedTabs.at(0);
+    QWidget *removedTab = static_cast<QWidget*>(removedTabs.at(0));
     tabWidget->insertTab(0, removedTab, "configSections");
     for(int ii = 0; ii < tabWidget->count(); ++ii)
     {
         QWidget *tab = tabWidget->widget(ii);
         QString tabName = tabWidget->tabText(ii);
-        QDomElement tabElem = docDocument.createElement(tabName);
+        QDomElement tabElem = domDocument.createElement(tabName);
         configElem.appendChild(tabElem);
 
         if (ii == 0){
@@ -84,13 +100,13 @@ void ConfigUI::saveFileAs()
                 {
                     QString filterName = static_cast<QGroupBox*>(item->widget())->title();
                     if (ii == 0){
-                        filterElem = docDocument.createElement("sectionGroup");
+                        filterElem = domDocument.createElement("sectionGroup");
                         filterElem.setAttribute("name", filterName);
                     }
                     else{
-                        filterElem = docDocument.createElement(filterName);
+                        filterElem = domDocument.createElement(filterName);
                     }
-                    filterElem = docDocument.createElement(filterName);
+                    filterElem = domDocument.createElement(filterName);
                     tabElem.appendChild(filterElem);
                     continue;
                 }
@@ -98,11 +114,11 @@ void ConfigUI::saveFileAs()
                 {
                     QString atrName;
                     if (tabName == "configSection"){
-                        keyElem = docDocument.createElement("section");
+                        keyElem = domDocument.createElement("section");
                         atrName = "name";
                     }
                     else{
-                        keyElem = docDocument.createElement("key");
+                        keyElem = domDocument.createElement("key");
                         atrName = "alias";
                     }
                     filterElem.appendChild(keyElem);
@@ -115,7 +131,7 @@ void ConfigUI::saveFileAs()
                     if(widgetType == "QLineEdit")
                     {
                         QString lineEdit = static_cast<QLineEdit*>(item->widget())->text();
-                        QDomText fieldText = docDocument.createTextNode(lineEdit);
+                        QDomText fieldText = domDocument.createTextNode(lineEdit);
                         keyElem.appendChild(fieldText);
                     }
                     else{
@@ -130,7 +146,7 @@ void ConfigUI::saveFileAs()
                             list.append(comboBox->itemText(k));
                         }
                         keyElem.setAttribute("list", list.join(','));
-                        QDomText currentItem = docDocument.createTextNode(comboBox->currentText());
+                        QDomText currentItem = domDocument.createTextNode(comboBox->currentText());
                         keyElem.appendChild(currentItem);
                     }
 
@@ -140,16 +156,9 @@ void ConfigUI::saveFileAs()
     }
     tabWidget->removeTab(0);
     removedTabs.removeFirst();
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
-                tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html);;"
-                   "All Files (*.*)"));
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
-        if (file.open(QFile::WriteOnly | QFile::Truncate)) {
-            QTextStream out(&file);
-            docDocument.save(out, 4);
-        }
-    }
+    if(!fileName.isEmpty())
+        writeFileStream(domDocument, fileName);
+    else writeFileStream(domDocument);
 }
 
 void ConfigUI::openFile()
@@ -197,8 +206,8 @@ void ConfigUI::parseXML(const QDomDocument &document) {
     QDomElement docElem = document.documentElement();
     QString rootTag = docElem.tagName();
     if(rootTag != "configuration"){
-        QString error = "Missing root tag <configuration>";
-        QMessageBox::critical(this, "TabDialog::parseXML", error, QMessageBox::Ok);
+        QString errorMessage = "Missing root tag <configuration>";
+        QMessageBox::critical(this, "TabDialog::parseXML", errorMessage, QMessageBox::Ok);
     }
 
     int pos = 0;
