@@ -7,6 +7,7 @@
 ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     : QMainWindow(parent)
 {
+    xmlPath = "";
     tabWidget = new QTabWidget;
     QFile* file = new QFile(fileName);
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -23,7 +24,17 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
     fileMenu->addAction(tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
-    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFileAs()), QKeySequence::SaveAs);
+
+    QAction *actionSaveAs = new QAction("Save &As", this);
+    actionSaveAs->setShortcut(QKeySequence::SaveAs);
+    fileMenu->addAction(actionSaveAs);
+
+    QSignalMapper *sigMapper = new QSignalMapper(this);
+    connect(actionSaveAs, SIGNAL(triggered()), sigMapper, SLOT(map()));
+    sigMapper->setMapping(actionSaveAs, xmlPath);
+    connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveFileAs(QString)));
+
+//    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFileAs()), QKeySequence::SaveAs);
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
     QScrollArea* scrollArea = new QScrollArea();
@@ -36,6 +47,11 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
 
 void ConfigUI::saveFile()
 {
+//    QFileInfo fileInfo(fileName);
+//    QString filePath = fileInfo.absoluteFilePath();
+    if(!xmlPath.isEmpty()){
+        saveFileAs(xmlPath);
+    }
 }
 
 void ConfigUI::writeFileStream(QDomDocument doc, QString fileName = NULL)
@@ -174,6 +190,7 @@ void ConfigUI::openFile()
                 resetUI();
                 parseXML(document);
                 xmlPath = filePath;
+                printf("\nXML path: %s\n", xmlPath.toStdString().c_str());
             }
             file.close();
         }

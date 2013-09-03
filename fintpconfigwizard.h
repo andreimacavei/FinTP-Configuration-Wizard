@@ -33,7 +33,7 @@ private slots:
 public slots:
     void openFile();
     void saveFile();
-    void saveFileAs(QString fileName);
+    void saveFileAs(QString);
 
 private:
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
@@ -45,6 +45,7 @@ private:
     QMenu *fileMenu;
     QString xmlPath;
     QDomDocument doc;
+    QSignalMapper *sigMapper;
 };
 
 
