@@ -7,9 +7,12 @@
 ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     : QMainWindow(parent)
 {
-    xmlPath = "";
+    QFileInfo fileInfo(fileName);
+    xmlPath = fileInfo.absoluteFilePath();
+    printf("\nFirst xml path: %s\n", xmlPath.toStdString().c_str());
     tabWidget = new QTabWidget;
     QFile* file = new QFile(fileName);
+
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString errorMessage = "Couldn't open " + fileName;
         QMessageBox::critical(this, "TabDialog::parseXML", errorMessage, QMessageBox::Ok);
@@ -20,21 +23,31 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
         return;
     }
     parseXML(doc);
+    file->close();
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
-    fileMenu->addAction(tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
 
+    QAction *actionSave = new QAction("&Save", this);
+    actionSave->setShortcut((QKeySequence::Save));
     QAction *actionSaveAs = new QAction("Save &As", this);
     actionSaveAs->setShortcut(QKeySequence::SaveAs);
+    fileMenu->addAction(actionSave);
     fileMenu->addAction(actionSaveAs);
 
-    QSignalMapper *sigMapper = new QSignalMapper(this);
+    sigMapper = new QSignalMapper(this);
+    connect(actionSave, SIGNAL(triggered()), sigMapper, SLOT(map()));
     connect(actionSaveAs, SIGNAL(triggered()), sigMapper, SLOT(map()));
-    sigMapper->setMapping(actionSaveAs, xmlPath);
-    connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveFileAs(QString)));
+    sigMapper->setMapping(actionSave, "save");
+    sigMapper->setMapping(actionSaveAs, "saveAs");
+    connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveXML(QString)));
 
+//    connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveFile(QString)));
+//    connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveFileAs(QString)));
+
+//    fileMenu->addAction(tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
 //    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFileAs()), QKeySequence::SaveAs);
+
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
     QScrollArea* scrollArea = new QScrollArea();
@@ -45,29 +58,79 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     setWindowTitle(tr("FinTP Config GUI"));
 }
 
-void ConfigUI::saveFile()
+void ConfigUI::openFile()
 {
-//    QFileInfo fileInfo(fileName);
-//    QString filePath = fileInfo.absoluteFilePath();
-    if(!xmlPath.isEmpty()){
-        saveFileAs(xmlPath);
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), xmlPath,
+                            tr("Xml Files (*.xml *.xslt);;HTML files (*.html);;"
+                               "User Interface files (*.ui);;All Files (*.*)"));
+    if (!filePath.isEmpty()) {
+        QFile file(filePath);
+        if (file.open(QIODevice::ReadOnly)) {
+            QDomDocument document;
+            if (document.setContent(&file)) {
+                resetUI();
+                parseXML(document);
+                xmlPath = filePath;
+                printf("\nNew XML path: %s\n", xmlPath.toStdString().c_str());
+            }
+            file.close();
+        }
+    }
+
+}
+
+void ConfigUI::resetUI()
+{
+    while(tabWidget->count() > 0)
+    {
+        QWidget *tab = tabWidget->widget(0);
+        if ( tab->layout() != NULL )
+        {
+            QLayoutItem* item;
+            while (tab->layout()->count() > 0)
+            {
+                item = tab->layout()->takeAt(0);
+                delete item->widget();
+                delete item;
+            }
+            delete tab->layout();
+        }
+        delete tab;
     }
 }
 
-void ConfigUI::writeFileStream(QDomDocument doc, QString fileName = NULL)
+void ConfigUI::writeFileStream(QDomDocument doc, QString saveType)
 {
-    if(fileName.isEmpty()){
-        fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
+    QFileInfo fileInfo;
+    QString filePath;
+    QFile file;
+
+    if(saveType == "saveAs"){
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
                     tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html);;"
                            "All Files (*.*)"));
-    }
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
-        if (file.open(QFile::WriteOnly | QFile::Truncate)) {
-            QTextStream out(&file);
-            doc.save(out, 4);
+        if (!fileName.isEmpty()) {
+            file.setFileName(fileName);
+            if (file.open(QFile::WriteOnly | QFile::Truncate)) {
+                QTextStream out(&file);
+                doc.save(out, 4);
+                fileInfo.setFile(file);
+            }
         }
     }
+    else{
+        if(saveType == "save"){
+            file.setFileName(this->xmlPath);
+            if (file.open(QFile::WriteOnly | QFile::Truncate)) {
+                QTextStream out(&file);
+                doc.save(out, 4);
+                fileInfo.setFile(file);
+            }
+        }
+    }
+    filePath = fileInfo.absoluteFilePath();
+    xmlPath = filePath;
+    file.close();
 }
 
 QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
@@ -83,7 +146,7 @@ QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
     return el;
 }
 
-void ConfigUI::saveFileAs(QString fileName = NULL)
+void ConfigUI::saveXML(QString saveType)
 {
     QDomDocument domDocument;
     QDomProcessingInstruction instr = domDocument.createProcessingInstruction(
@@ -172,50 +235,7 @@ void ConfigUI::saveFileAs(QString fileName = NULL)
     }
     tabWidget->removeTab(0);
     removedTabs.removeFirst();
-    if(!fileName.isEmpty())
-        writeFileStream(domDocument, fileName);
-    else writeFileStream(domDocument);
-}
-
-void ConfigUI::openFile()
-{
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), xmlPath,
-                            tr("Xml Files (*.xml *.xslt);;HTML files (*.html);;"
-                               "User Interface files (*.ui);;All Files (*.*)"));
-    if (!filePath.isEmpty()) {
-        QFile file(filePath);
-        if (file.open(QIODevice::ReadOnly)) {
-            QDomDocument document;
-            if (document.setContent(&file)) {
-                resetUI();
-                parseXML(document);
-                xmlPath = filePath;
-                printf("\nXML path: %s\n", xmlPath.toStdString().c_str());
-            }
-            file.close();
-        }
-    }
-
-}
-
-void ConfigUI::resetUI()
-{
-    while(tabWidget->count() > 0)
-    {
-        QWidget *tab = tabWidget->widget(0);
-        if ( tab->layout() != NULL )
-        {
-            QLayoutItem* item;
-            while (tab->layout()->count() > 0)
-            {
-                item = tab->layout()->takeAt(0);
-                delete item->widget();
-                delete item;
-            }
-            delete tab->layout();
-        }
-        delete tab;
-    }
+    writeFileStream(domDocument, saveType);
 }
 
 void ConfigUI::parseXML(const QDomDocument &document) {

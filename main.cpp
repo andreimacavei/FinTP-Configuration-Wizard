@@ -6,12 +6,10 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QString fileName;
 
-    if (argc >= 2){
+    if (argc >= 2)
         fileName = QString(argv[1]);
-    }
-    else{
+    else
         fileName = QString(argv[0]) + ".xml";
-    }
     ConfigUI configUi(fileName);
     configUi.resize(600, 400);
     configUi.show();

@@ -32,13 +32,12 @@ private slots:
 
 public slots:
     void openFile();
-    void saveFile();
-    void saveFileAs(QString);
+    void saveXML(QString saveType);
 
 private:
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
-    void writeFileStream(QDomDocument doc, QString fileName);
+    void writeFileStream(QDomDocument doc, QString saveType);
     QTabWidget *tabWidget;
     QList<QWidget*> removedTabs;
     QDialogButtonBox *buttonBox;
