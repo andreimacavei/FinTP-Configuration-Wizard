@@ -27,6 +27,7 @@ public:
     explicit ConfigUI(const QString &fileName, QWidget *parent = 0);
 
 private slots:
+    void writeFileStream(QDomDocument doc, QString saveType);
     void parseXML(const QDomDocument &doc);
     void resetUI();
 
@@ -37,7 +38,6 @@ public slots:
 private:
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
-    void writeFileStream(QDomDocument doc, QString saveType);
     QTabWidget *tabWidget;
     QList<QWidget*> removedTabs;
     QDialogButtonBox *buttonBox;

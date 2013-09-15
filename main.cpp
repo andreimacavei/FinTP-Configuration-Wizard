@@ -1,6 +1,15 @@
 #include "fintpconfigwizard.h"
 #include <QApplication>
 
+void setCenterOfApplication(QWidget* widget)
+{
+    QSize size = widget->sizeHint();
+    QDesktopWidget* desktop = QApplication::desktop();
+    int width = desktop->width();
+    int height = desktop->height();
+    widget->move(width/4, height/4);
+}
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -10,9 +19,10 @@ int main(int argc, char *argv[])
         fileName = QString(argv[1]);
     else
         fileName = QString(argv[0]) + ".xml";
-    ConfigUI configUi(fileName);
-    configUi.resize(600, 400);
-    configUi.show();
+    ConfigUI *configUi = new ConfigUI(fileName);
+    configUi->resize(600, 400);
+    setCenterOfApplication(configUi);
+    configUi->show();
 
     return a.exec();
 }
