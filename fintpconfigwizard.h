@@ -38,11 +38,11 @@ public slots:
 private:
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
-    QTabWidget *tabWidget;
-    QList<QWidget*> removedTabs;
-    QDialogButtonBox *buttonBox;
-    QMenu *fileMenu;
-    QString xmlPath;
+    QTabWidget *m_tabWidget;
+    QList<QWidget*> m_removedTabs;
+    QDialogButtonBox *m_buttonBox;
+    QMenu *m_fileMenu;
+    QString m_xmlPath;
     QDomDocument doc;
     QSignalMapper *sigMapper;
 };
