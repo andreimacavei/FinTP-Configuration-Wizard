@@ -43,8 +43,8 @@ private:
     QDialogButtonBox *m_buttonBox;
     QMenu *m_fileMenu;
     QString m_xmlPath;
-    QDomDocument doc;
-    QSignalMapper *sigMapper;
+    QDomDocument m_Doc;
+    QSignalMapper *m_sigMapper;
 };
 
 

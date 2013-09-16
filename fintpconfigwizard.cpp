@@ -66,7 +66,6 @@ void ConfigUI::openFile()
                 resetUI();
                 parseXML(document);
                 m_xmlPath = filePath;
-                printf("\nNew XML path: %s\n", m_xmlPath.toStdString().c_str());
             }
             file.close();
         }
@@ -213,7 +212,7 @@ void ConfigUI::saveXML(QString saveType)
                         QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
                         if (!comboBox){
                             QString error = "Unknown Widget";
-                            QMessageBox::critical(this, "TabDialog::saveFileAs", error, QMessageBox::Ok);
+                            QMessageBox::critical(this, "TabDialog::saveXML", error, QMessageBox::Ok);
                         }
                         QStringList list;
                         for(int k = 0; k < comboBox->count(); ++k){
@@ -264,6 +263,9 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             /*
              * TODO : Update QGroupBox widget to Flat style
              */
+//            QFrame *lineFrame = new QFrame();
+//            lineFrame->setFrameShape(QFrame::HLine);
+//            layout->addWidget(lineFrame);
             while(!keyNode.isNull())
             {
                 QDomElement keyData = keyNode.toElement();
