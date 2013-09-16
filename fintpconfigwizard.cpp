@@ -9,19 +9,20 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
 {
     QFileInfo fileInfo(fileName);
     xmlPath = fileInfo.absoluteFilePath();
-    printf("\nFirst xml path: %s\n", xmlPath.toStdString().c_str());
     tabWidget = new QTabWidget;
-    QFile* file = new QFile(fileName);
 
+    QFile* file = new QFile(fileName);
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString errorMessage = "Couldn't open " + fileName;
         QMessageBox::critical(this, "TabDialog::parseXML", errorMessage, QMessageBox::Ok);
         return;
     }
+
     if (!this->doc.setContent(file)){
-        QMessageBox::critical(this, "TabDialog::parseXML", "Unable to set DOM parser", QMessageBox::Ok);
+        QMessageBox::critical(this, "TabDialog::parseXML", "Unable to set DOM Document", QMessageBox::Ok);
         return;
     }
+
     parseXML(doc);
     file->close();
 
@@ -41,12 +42,6 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     sigMapper->setMapping(actionSave, "save");
     sigMapper->setMapping(actionSaveAs, "saveAs");
     connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveXML(QString)));
-
-//    connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveFile(QString)));
-//    connect(sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveFileAs(QString)));
-
-//    fileMenu->addAction(tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
-//    fileMenu->addAction(tr("Save &As"), this, SLOT(saveFileAs()), QKeySequence::SaveAs);
 
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
@@ -234,7 +229,6 @@ void ConfigUI::saveXML(QString saveType)
         }
     }
     tabWidget->removeTab(0);
-    removedTabs.removeFirst();
     writeFileStream(domDocument, saveType);
 }
 
