@@ -26,7 +26,26 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     parseXML(m_Doc);
     file->close();
 
-    m_fileMenu = menuBar()->addMenu(tr("&File"));
+//    m_fileMenu = menuBar()->addMenu(tr("&File"));
+    createMenu();
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
+    mainLayout->setMenuBar(m_menuBar);
+    mainLayout->addWidget(m_tabWidget);
+//    QScrollArea* scrollArea = new QScrollArea();
+//    scrollArea->setWidget(m_tabWidget);
+//    scrollArea->setWidgetResizable(true);
+//    setCentralWidget(m_tabWidget);
+    setLayout(mainLayout);
+    setWindowTitle(tr("FinTP Config GUI"));
+}
+
+void ConfigUI::createMenu()
+{
+    m_menuBar = new QMenuBar;
+    m_fileMenu = new QMenu(tr("&File"), this);
+
     m_fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
 
     QAction *actionSave = new QAction("&Save", this);
@@ -45,11 +64,10 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
 
     m_fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
-    QScrollArea* scrollArea = new QScrollArea();
-    scrollArea->setWidget(m_tabWidget);
-    scrollArea->setWidgetResizable(true);
-    setCentralWidget(m_tabWidget);
-    setWindowTitle(tr("FinTP Config GUI"));
+//    exitAction = fileMenu->addAction(tr("E&xit"));
+    m_menuBar->addMenu(m_fileMenu);
+
+//    connect(exitAction, SIGNAL(triggered()), this, SLOT(accept()));
 }
 
 void ConfigUI::openFile()
