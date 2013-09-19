@@ -49,17 +49,17 @@
 	  <key name ="AppToMQSeries.BatchManagerType" list="FlatFile,XMLFile" alias="Batch format">XMLfile</key>
 	  <key name ="AppToMQSeries.BatchXsltFile" alias="Split batch xslt">getGroupElement.xslt</key>
 	</Fetcher>
-	<qPIFilter_1>
+	<qPIFilter_1 visible = "true">
 	  <key name ="order" list="" alias="Order number">1</key>
 	  <key name ="type" list="" alias="Filter type">BASE64</key>
 	  <key name ="xPath" list="" alias="Payload path">/</key>
 	</qPIFilter_1>
-	<qPIFilter_2>
+	<qPIFilter_2 visible = "false">
 	  <key name ="order" list="" alias="Order number">2</key>
 	  <key name ="type" list="" alias="Filter type">XSLT</key>
 	  <key name ="xsltFile" list="" alias="Transform file">ACH2QPI.xslt</key>
 	</qPIFilter_2>
-	<qPIFilter_3>
+	<qPIFilter_3 visible = "false">
 	  <key name ="order" list="" alias="Order number">3</key>
 	  <key name ="type" list="WMQ,AMQ" alias="Filter type"></key>
 	  <key name ="WMQQMgr" list="" alias="Queue manager"></key>
@@ -90,7 +90,7 @@
 		<key name="MQSeriesToApp.BackupQueue" alias="Backup queue"></key>
 		<key name="MQSeriesToApp.MessageFormat" List="MQSTR, MQHRF2, MQBINARY" alias="Queuing message format"></key>
 	</Publisher>
-	<qPIFilter_0>
+	<qPIFilter_0 visible = "true">
 	  <key name ="order" list="" alias="Order number">0</key>
 	  <key name ="type" list="WMQ,AMQ" alias="Filter type"></key>
 	  <key name ="batch" list="true,false" alias="Batch processing "></key>

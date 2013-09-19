@@ -48,8 +48,7 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     QScrollArea* scrollArea = new QScrollArea();
     scrollArea->setWidget(m_tabWidget);
     scrollArea->setWidgetResizable(true);
-
-    setCentralWidget(scrollArea);
+    setCentralWidget(m_tabWidget);
     setWindowTitle(tr("FinTP Config GUI"));
 }
 
@@ -246,10 +245,9 @@ void ConfigUI::parseXML(const QDomDocument &document) {
     {
         QString tabName = siblings.at(i).toElement().tagName();
         QWidget *tab = new QWidget();
-        QFormLayout* layout = new QFormLayout;
+        QVBoxLayout* layout = new QVBoxLayout;
         QDomElement el = siblings.at(i).toElement();
         QDomNodeList childList = el.childNodes();
-        layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
 
         for(int j = 0; j < childList.count(); j++)
         {
@@ -258,8 +256,8 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             if (filterName == "sectionGroup"){
                 filterName = childList.at(j).toElement().attribute("name");
             }
-            QGroupBox* filterSection = new QGroupBox(filterName);
-            layout->addWidget(filterSection);
+            QGroupBox* filterSectionGroup = new QGroupBox(filterName);
+            QFormLayout *formLayout = new QFormLayout;
             /*
              * TODO : Update QGroupBox widget to Flat style
              */
@@ -280,18 +278,21 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                     comboBox->addItems(keyValues);
                     if (!keyText.isNull())
                         comboBox->setCurrentText(keyText);
-                    layout->addRow(keyAlias, comboBox);
+                    formLayout->addRow(keyAlias, comboBox);
                 }
                 else{
                     if (keyData.tagName() == "section")
                     {
                         keyAlias = keyName;
                     }
-                    layout->addRow(keyAlias, new QLineEdit(keyText));
+                    formLayout->addRow(keyAlias, new QLineEdit(keyText));
                 }
                 keyNode = keyNode.nextSibling();
             }
+            filterSectionGroup->setLayout(formLayout);
+            layout->addWidget(filterSectionGroup);
         }
+
         tab->setLayout(layout);
         this->m_tabWidget->addTab(tab, tabName);
         if(tabName == "configSections"){
