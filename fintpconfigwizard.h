@@ -19,7 +19,7 @@ class QTabWidget;
 QT_END_NAMESPACE
 
 
-class ConfigUI: public QMainWindow
+class ConfigUI: public QDialog
 {
     Q_OBJECT
 

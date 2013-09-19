@@ -5,7 +5,7 @@
 #include <QTextStream>
 
 ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
-    : QMainWindow(parent)
+    : QDialog(parent)
 {
     QFileInfo fileInfo(fileName);
     m_xmlPath = fileInfo.absoluteFilePath();
@@ -30,13 +30,11 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     createMenu();
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
-    mainLayout->setMenuBar(m_menuBar);
-    mainLayout->addWidget(m_tabWidget);
-//    QScrollArea* scrollArea = new QScrollArea();
-//    scrollArea->setWidget(m_tabWidget);
-//    scrollArea->setWidgetResizable(true);
-//    setCentralWidget(m_tabWidget);
+    QScrollArea* scrollArea = new QScrollArea();
+    scrollArea->setWidget(m_tabWidget);
+    scrollArea->setWidgetResizable(true);
+    mainLayout->addWidget(m_menuBar);
+    mainLayout->addWidget(scrollArea);
     setLayout(mainLayout);
     setWindowTitle(tr("FinTP Config GUI"));
 }
@@ -63,11 +61,7 @@ void ConfigUI::createMenu()
     connect(m_sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveXML(QString)));
 
     m_fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
-
-//    exitAction = fileMenu->addAction(tr("E&xit"));
     m_menuBar->addMenu(m_fileMenu);
-
-//    connect(exitAction, SIGNAL(triggered()), this, SLOT(accept()));
 }
 
 void ConfigUI::openFile()
