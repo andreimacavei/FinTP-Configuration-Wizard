@@ -5,7 +5,7 @@
 #include <QTextStream>
 
 ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
-    : QDialog(parent)
+    : QMainWindow(parent)
 {
     QFileInfo fileInfo(fileName);
     m_xmlPath = fileInfo.absoluteFilePath();
@@ -23,19 +23,16 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
         return;
     }
 
+    createMenu();
     parseXML(m_Doc);
     file->close();
 
-//    m_fileMenu = menuBar()->addMenu(tr("&File"));
-    createMenu();
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    this->setMenuBar(m_menuBar);
     QScrollArea* scrollArea = new QScrollArea();
     scrollArea->setWidget(m_tabWidget);
     scrollArea->setWidgetResizable(true);
-    mainLayout->addWidget(m_menuBar);
-    mainLayout->addWidget(scrollArea);
-    setLayout(mainLayout);
+
+    setCentralWidget(scrollArea);
     setWindowTitle(tr("FinTP Config GUI"));
 }
 
@@ -43,7 +40,6 @@ void ConfigUI::createMenu()
 {
     m_menuBar = new QMenuBar;
     m_fileMenu = new QMenu(tr("&File"), this);
-
     m_fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
 
     QAction *actionSave = new QAction("&Save", this);
@@ -257,9 +253,10 @@ void ConfigUI::parseXML(const QDomDocument &document) {
     {
         QString tabName = siblings.at(i).toElement().tagName();
         QWidget *tab = new QWidget();
-        QVBoxLayout* layout = new QVBoxLayout;
+        QFormLayout* layout = new QFormLayout;
         QDomElement el = siblings.at(i).toElement();
         QDomNodeList childList = el.childNodes();
+        layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
 
         for(int j = 0; j < childList.count(); j++)
         {
@@ -269,13 +266,12 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                 filterName = childList.at(j).toElement().attribute("name");
             }
             QGroupBox* filterSectionGroup = new QGroupBox(filterName);
-            QFormLayout *formLayout = new QFormLayout;
+            layout->addWidget(filterSectionGroup);
+
             /*
              * TODO : Update QGroupBox widget to Flat style
              */
-//            QFrame *lineFrame = new QFrame();
-//            lineFrame->setFrameShape(QFrame::HLine);
-//            layout->addWidget(lineFrame);
+
             while(!keyNode.isNull())
             {
                 QDomElement keyData = keyNode.toElement();
@@ -290,19 +286,17 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                     comboBox->addItems(keyValues);
                     if (!keyText.isNull())
                         comboBox->setCurrentText(keyText);
-                    formLayout->addRow(keyAlias, comboBox);
+                    layout->addRow(keyAlias, comboBox);
                 }
                 else{
                     if (keyData.tagName() == "section")
                     {
                         keyAlias = keyName;
                     }
-                    formLayout->addRow(keyAlias, new QLineEdit(keyText));
+                    layout->addRow(keyAlias, new QLineEdit(keyText));
                 }
                 keyNode = keyNode.nextSibling();
             }
-            filterSectionGroup->setLayout(formLayout);
-            layout->addWidget(filterSectionGroup);
         }
 
         tab->setLayout(layout);
