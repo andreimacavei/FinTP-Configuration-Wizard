@@ -36,11 +36,13 @@ public slots:
     void saveXML(QString saveType);
 
 private:
+    void createMenu();
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
     QTabWidget *m_tabWidget;
     QList<QWidget*> m_removedTabs;
     QDialogButtonBox *m_buttonBox;
+    QMenuBar *m_menuBar;
     QMenu *m_fileMenu;
     QString m_xmlPath;
     QDomDocument m_Doc;
