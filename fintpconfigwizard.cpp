@@ -24,15 +24,22 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
         return;
     }
 
-    createMenu();
     parseXML(m_Doc);
     file->close();
 
+    QPushButton *addFilter = new QPushButton("Add Filter");
+    connect(addFilter, SIGNAL(clicked()),this, SLOT(addFilter()));
+    QToolBar *toolBar = new QToolBar;
+    toolBar->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    toolBar->addWidget(addFilter);
+
+    createMenu();
     this->setMenuBar(m_menuBar);
     QScrollArea* scrollArea = new QScrollArea();
     scrollArea->setWidget(m_tabWidget);
     scrollArea->setWidgetResizable(true);
 
+    this->addToolBar(toolBar);
     setCentralWidget(scrollArea);
     setWindowTitle(tr("FinTP Config GUI"));
 }
@@ -61,6 +68,44 @@ void ConfigUI::createMenu()
     m_menuBar->addMenu(m_fileMenu);
 }
 
+void ConfigUI::addFilter() {
+    int index = m_tabWidget->currentIndex();
+    QString tabName = m_tabWidget->tabText(index);
+    QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
+    QDomNodeList filterList = tabNode.childNodes();
+
+    QStandardItemModel* listModel = new QStandardItemModel();
+    for (int ii = 0; ii < filterList.count(); ++ii) {
+        QDomElement filterNode = filterList.at(ii).toElement();
+
+        if ( filterNode.attribute("visible", "") == "false"){
+            QDomNodeList keyList = filterNode.childNodes();
+
+            for (int jj = 0; jj < keyList.count(); ++jj)
+            {
+                QDomElement keyNode = keyList.at(jj).toElement();
+                if ( keyNode.attribute("name", "") == "type"){
+                    QString filterText = "- " + keyNode.attribute("alias") + ": "
+                            + keyNode.text();
+                    QString filterName = filterNode.tagName() + filterText;
+                    QStandardItem* listItem = new QStandardItem(filterName);
+                    listModel->appendRow(listItem);
+                }
+            }
+        }
+    }
+
+    QListView *listView = new QListView;
+    listView->setModel(listModel);
+    QGridLayout *layout = new QGridLayout;
+    layout->addWidget(listView, 0, 0);
+    QFrame* popup = new QFrame(this, Qt::Tool | Qt::Window);
+    popup->resize(300,200);
+    popup->setLayout(layout);
+    popup->move(this->x() + 150, this->y() + 100);
+    popup->show();
+}
+
 void ConfigUI::openFile()
 {
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), m_xmlPath,
@@ -74,6 +119,7 @@ void ConfigUI::openFile()
                 resetUI();
                 parseXML(document);
                 m_xmlPath = filePath;
+                m_Doc.setContent(&file);
             }
             file.close();
         }
@@ -132,6 +178,9 @@ void ConfigUI::writeFileStream(QDomDocument doc, QString saveType)
     }
     filePath = fileInfo.absoluteFilePath();
     m_xmlPath = filePath;
+    file.close();
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    m_Doc.setContent(&file);
     file.close();
 }
 
@@ -241,36 +290,6 @@ void ConfigUI::saveXML(QString saveType)
     writeFileStream(domDocument, saveType);
 }
 
-void ConfigUI::addFilter() {
-    int index = m_tabWidget->currentIndex();
-    QString tabName = m_tabWidget->tabText(index);
-    QDomElement tabNode = m_Doc.firstChildElement(tabName);
-    QDomNodeList filterList = tabNode.childNodes();
-
-    for (int ii; ii < filterList.count(); ++ii) {
-        QDomElement filterNode = filterList.at(ii).toElement();
-
-        if ( filterNode.attribute("visible", "") == "false"){
-            QDomNodeList keyList = filterNode.childNodes();
-
-            for (int jj; jj < keyList.count(); ++jj){
-                QDomElement keyNode = keyList.at(jj).toElement();
-                if ( keyNode.attribute("name", "") == "type"){
-                    QString filterText = "- " + keyNode.attribute("alias") + ": "
-                            + keyNode.text();
-                    QString filterName = filterNode.tagName() + filterText;
-                }
-            }
-        }
-    }
-
-    QFrame* popup = new QFrame(this, Qt::Tool | Qt::Window);
-    popup->resize(150,100);
-
-
-    popup->show();
-}
-
 void ConfigUI::parseXML(const QDomDocument &document) {
 
     QDomElement docElem = document.documentElement();
@@ -303,7 +322,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             QGroupBox* filterSectionGroup = new QGroupBox(filterName);
             filterSectionGroup->setObjectName(visibleAttr);
             if (visibleAttr == "false"){
-                filterSectionGroup->setHidden(true);
+//                filterSectionGroup->setHidden(true);
             }
             layout->addWidget(filterSectionGroup);
 
@@ -342,10 +361,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                 keyNode = keyNode.nextSibling();
             }
         }
-        QPushButton *addFilter = new QPushButton("Add Filter");
-        connect(addFilter, SIGNAL(clicked()),this, SLOT(addFilter()));
 
-        layout->addRow(addFilter);
         tab->setLayout(layout);
         this->m_tabWidget->addTab(tab, tabName);
         if(tabName == "configSections"){
@@ -353,7 +369,6 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             m_removedTabs.append(tab);
             this->m_tabWidget->removeTab(pos);
         }
-        m_buttonList.append(addFilter);
         pos++;
     }
 }
