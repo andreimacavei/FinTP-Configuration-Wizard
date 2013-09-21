@@ -187,6 +187,8 @@ void ConfigUI::saveXML(QString saveType)
                 }
                 else{
                     filterElem = domDocument.createElement(filterName);
+                    if (item->widget()->objectName() != "")
+                        filterElem.setAttribute("visible", item->widget()->objectName());
                 }
                 tabElem.appendChild(filterElem);
                 continue;
@@ -261,10 +263,13 @@ void ConfigUI::parseXML(const QDomDocument &document) {
         {
             QDomNode keyNode = childList.at(j).firstChild();
             QString filterName = childList.at(j).toElement().tagName();
+            QString visibleAttr = childList.at(j).toElement().attribute("visible");
+
             if (filterName == "sectionGroup"){
                 filterName = childList.at(j).toElement().attribute("name");
             }
             QGroupBox* filterSectionGroup = new QGroupBox(filterName);
+            filterSectionGroup->setObjectName(visibleAttr);
             layout->addWidget(filterSectionGroup);
 
             /*
