@@ -30,6 +30,7 @@ private slots:
     void writeFileStream(QDomDocument doc, QString saveType);
     void parseXML(const QDomDocument &doc);
     void resetUI();
+    void addFilter();
 
 public slots:
     void openFile();
@@ -47,6 +48,7 @@ private:
     QString m_xmlPath;
     QDomDocument m_Doc;
     QSignalMapper *m_sigMapper;
+    QList<QPushButton*> m_buttonList;
 };
 
 

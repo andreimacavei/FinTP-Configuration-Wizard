@@ -19,7 +19,8 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     }
 
     if (!this->m_Doc.setContent(file)){
-        QMessageBox::critical(this, "TabDialog::parseXML", "Unable to set DOM Document", QMessageBox::Ok);
+        QMessageBox::critical(this, "TabDialog::parseXML",
+                              "Unable to set DOM Document", QMessageBox::Ok);
         return;
     }
 
@@ -217,19 +218,20 @@ void ConfigUI::saveXML(QString saveType)
                     }
                 }
                 else{
-                    /* Then widget is a ComboBox*/
-                    QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
-                    if (!comboBox){
-                        QString error = "Unknown Widget";
-                        QMessageBox::critical(this, "TabDialog::saveXML", error, QMessageBox::Ok);
+                    if (widgetType == "QComboBox"){
+                        QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
+                        if (!comboBox){
+                            QString error = "Unknown Widget";
+                            QMessageBox::critical(this, "TabDialog::saveXML", error, QMessageBox::Ok);
+                        }
+                        QStringList list;
+                        for(int k = 0; k < comboBox->count(); ++k){
+                            list.append(comboBox->itemText(k));
+                        }
+                        keyElem.setAttribute("list", list.join(','));
+                        QDomText currentItem = domDocument.createTextNode(comboBox->currentText());
+                        keyElem.appendChild(currentItem);
                     }
-                    QStringList list;
-                    for(int k = 0; k < comboBox->count(); ++k){
-                        list.append(comboBox->itemText(k));
-                    }
-                    keyElem.setAttribute("list", list.join(','));
-                    QDomText currentItem = domDocument.createTextNode(comboBox->currentText());
-                    keyElem.appendChild(currentItem);
                 }//end of if(widgetType == "QLineEdit)
 
             }//end of if(widgetType == "QLabel")
@@ -237,6 +239,36 @@ void ConfigUI::saveXML(QString saveType)
     }
     m_tabWidget->removeTab(0);
     writeFileStream(domDocument, saveType);
+}
+
+void ConfigUI::addFilter() {
+    int index = m_tabWidget->currentIndex();
+    QString tabName = m_tabWidget->tabText(index);
+    QDomElement tabNode = m_Doc.firstChildElement(tabName);
+    QDomNodeList filterList = tabNode.childNodes();
+
+    for (int ii; ii < filterList.count(); ++ii) {
+        QDomElement filterNode = filterList.at(ii).toElement();
+
+        if ( filterNode.attribute("visible", "") == "false"){
+            QDomNodeList keyList = filterNode.childNodes();
+
+            for (int jj; jj < keyList.count(); ++jj){
+                QDomElement keyNode = keyList.at(jj).toElement();
+                if ( keyNode.attribute("name", "") == "type"){
+                    QString filterText = "- " + keyNode.attribute("alias") + ": "
+                            + keyNode.text();
+                    QString filterName = filterNode.tagName() + filterText;
+                }
+            }
+        }
+    }
+
+    QFrame* popup = new QFrame(this, Qt::Tool | Qt::Window);
+    popup->resize(150,100);
+
+
+    popup->show();
 }
 
 void ConfigUI::parseXML(const QDomDocument &document) {
@@ -270,10 +302,13 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             }
             QGroupBox* filterSectionGroup = new QGroupBox(filterName);
             filterSectionGroup->setObjectName(visibleAttr);
+            if (visibleAttr == "false"){
+                filterSectionGroup->setHidden(true);
+            }
             layout->addWidget(filterSectionGroup);
 
             /*
-             * TODO : Update QGroupBox widget to Flat style
+             * TODO : Use stretch factor on all groupBoxes
              */
 
             while(!keyNode.isNull())
@@ -307,7 +342,10 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                 keyNode = keyNode.nextSibling();
             }
         }
+        QPushButton *addFilter = new QPushButton("Add Filter");
+        connect(addFilter, SIGNAL(clicked()),this, SLOT(addFilter()));
 
+        layout->addRow(addFilter);
         tab->setLayout(layout);
         this->m_tabWidget->addTab(tab, tabName);
         if(tabName == "configSections"){
@@ -315,6 +353,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             m_removedTabs.append(tab);
             this->m_tabWidget->removeTab(pos);
         }
+        m_buttonList.append(addFilter);
         pos++;
     }
 }
