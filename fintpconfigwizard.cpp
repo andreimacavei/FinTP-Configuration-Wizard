@@ -74,6 +74,7 @@ void ConfigUI::addFilter() {
     QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
     QDomNodeList filterList = tabNode.childNodes();
 
+
     QStandardItemModel* listModel = new QStandardItemModel();
     for (int ii = 0; ii < filterList.count(); ++ii) {
         QDomElement filterNode = filterList.at(ii).toElement();
@@ -119,7 +120,7 @@ void ConfigUI::openFile()
                 resetUI();
                 parseXML(document);
                 m_xmlPath = filePath;
-                m_Doc.setContent(&file);
+                m_Doc = document;
             }
             file.close();
         }
