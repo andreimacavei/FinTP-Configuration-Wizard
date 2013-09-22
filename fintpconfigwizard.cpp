@@ -126,9 +126,26 @@ void ConfigUI::addFilterToGui() {
     QStringList filterList;
     QModelIndexList listModel = m_listView->selectionModel()->selectedIndexes();
     for(int ii=0; ii < listModel.count(); ++ii) {
-        filterList.append(listModel.at(ii).data(Qt::DisplayRole).toString());
+        QStringList dataTokens = listModel.at(ii).data(Qt::DisplayRole).toString().split(':');
+        filterList.append(dataTokens.at(0));
         printf("\n%i. %s\n", ii+1, filterList.at(ii).toStdString().c_str());
     }
+
+    QWidget *tab = m_tabWidget->currentWidget();
+    for(int ii = 0; ii < tab->layout()->count(); ++ii)
+    {
+        QLayoutItem* item = tab->layout()->itemAt(ii);
+        QString widgetType = QString(item->widget()->metaObject()->className());
+
+        if(widgetType == "QGroupBox" && item->widget()->isHidden()){
+            QString filterName = static_cast<QGroupBox*>(item->widget())->title();
+            if (filterList.contains(filterName, Qt::CaseInsensitive)){
+                item->widget()->setVisible(true);
+                printf("\n%s\n", filterName.toStdString().c_str());
+            }
+        }
+    }
+
     m_addFilter->setEnabled(true);
     m_frameBox->hide();
 }
