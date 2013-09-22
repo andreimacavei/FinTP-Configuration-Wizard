@@ -30,7 +30,9 @@ private slots:
     void writeFileStream(QDomDocument doc, QString saveType);
     void parseXML(const QDomDocument &doc);
     void resetUI();
-    void addFilter();
+    void showFrameBox();
+    void hideFrameBox();
+    void addFilterToGui();
 
 public slots:
     void openFile();
@@ -38,6 +40,8 @@ public slots:
 
 private:
     void createMenu();
+    void createFrameBox();
+    QStandardItemModel* getFilterList();
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
     QTabWidget *m_tabWidget;
@@ -49,6 +53,11 @@ private:
     QDomDocument m_Doc;
     QSignalMapper *m_sigMapper;
     QList<QPushButton*> m_buttonList;
+    QPushButton *m_addFilter;
+    QPushButton *m_acceptButton;
+    QPushButton *m_cancelButton;
+    QFrame *m_frameBox;
+    QListView *m_listView;
 };
 
 

@@ -27,11 +27,12 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     parseXML(m_Doc);
     file->close();
 
-    QPushButton *addFilter = new QPushButton("Add Filter");
-    connect(addFilter, SIGNAL(clicked()),this, SLOT(addFilter()));
+    createFrameBox();
+    m_addFilter = new QPushButton("Add Filter");
+    connect(m_addFilter, SIGNAL(clicked()),this, SLOT(showFrameBox()));
     QToolBar *toolBar = new QToolBar;
     toolBar->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    toolBar->addWidget(addFilter);
+    toolBar->addWidget(m_addFilter);
 
     createMenu();
     this->setMenuBar(m_menuBar);
@@ -68,12 +69,35 @@ void ConfigUI::createMenu()
     m_menuBar->addMenu(m_fileMenu);
 }
 
-void ConfigUI::addFilter() {
+void ConfigUI::createFrameBox() {
+
+    QGridLayout *layout = new QGridLayout;
+
+    m_listView = new QListView;
+    m_listView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_frameBox = new QFrame(this, Qt::Tool | Qt::Window);
+    m_frameBox->resize(300,200);
+    m_frameBox->setFrameStyle ( QFrame::Box | QFrame::Raised);
+    m_acceptButton = new QPushButton("Ok");
+    m_cancelButton = new QPushButton("Cancel");
+    connect(m_acceptButton, SIGNAL(clicked()), this, SLOT(addFilterToGui()));
+    connect(m_cancelButton, SIGNAL(clicked()), this, SLOT(hideFrameBox()));
+
+    layout->addWidget(m_listView, 0, 0, 1, 0);
+    layout->addWidget(m_acceptButton,1,1);
+    layout->addWidget(m_cancelButton,1,2);
+    m_frameBox->setLayout(layout);
+    this->sizeHint();
+    m_frameBox->move(this->x() + 150, this->y() + 100);
+    m_frameBox->hide();
+}
+
+QStandardItemModel* ConfigUI::getFilterList() {
+
     int index = m_tabWidget->currentIndex();
     QString tabName = m_tabWidget->tabText(index);
     QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
     QDomNodeList filterList = tabNode.childNodes();
-
 
     QStandardItemModel* listModel = new QStandardItemModel();
     for (int ii = 0; ii < filterList.count(); ++ii) {
@@ -86,7 +110,7 @@ void ConfigUI::addFilter() {
             {
                 QDomElement keyNode = keyList.at(jj).toElement();
                 if ( keyNode.attribute("name", "") == "type"){
-                    QString filterText = "- " + keyNode.attribute("alias") + ": "
+                    QString filterText = ": " + keyNode.attribute("alias") + "-"
                             + keyNode.text();
                     QString filterName = filterNode.tagName() + filterText;
                     QStandardItem* listItem = new QStandardItem(filterName);
@@ -95,16 +119,31 @@ void ConfigUI::addFilter() {
             }
         }
     }
+    return listModel;
+}
 
-    QListView *listView = new QListView;
-    listView->setModel(listModel);
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(listView, 0, 0);
-    QFrame* popup = new QFrame(this, Qt::Tool | Qt::Window);
-    popup->resize(300,200);
-    popup->setLayout(layout);
-    popup->move(this->x() + 150, this->y() + 100);
-    popup->show();
+void ConfigUI::addFilterToGui() {
+    QStringList filterList;
+    QModelIndexList listModel = m_listView->selectionModel()->selectedIndexes();
+    for(int ii=0; ii < listModel.count(); ++ii) {
+        filterList.append(listModel.at(ii).data(Qt::DisplayRole).toString());
+        printf("\n%i. %s\n", ii+1, filterList.at(ii).toStdString().c_str());
+    }
+    m_addFilter->setEnabled(true);
+    m_frameBox->hide();
+}
+
+void ConfigUI::showFrameBox() {
+
+    m_addFilter->setEnabled(false);
+    m_listView->setModel(getFilterList());
+    m_frameBox->show();
+}
+
+void ConfigUI::hideFrameBox() {
+
+    m_addFilter->setEnabled(true);
+    m_frameBox->hide();
 }
 
 void ConfigUI::openFile()
@@ -323,7 +362,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             QGroupBox* filterSectionGroup = new QGroupBox(filterName);
             filterSectionGroup->setObjectName(visibleAttr);
             if (visibleAttr == "false"){
-//                filterSectionGroup->setHidden(true);
+                filterSectionGroup->setHidden(true);
             }
             layout->addWidget(filterSectionGroup);
 
