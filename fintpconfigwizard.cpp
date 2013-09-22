@@ -92,10 +92,10 @@ void ConfigUI::createFrameBox() {
     m_frameBox->hide();
 }
 
-QStandardItemModel* ConfigUI::getFilterList() {
+QStandardItemModel* ConfigUI::getFilterFromXml() {
 
-    int index = m_tabWidget->currentIndex();
-    QString tabName = m_tabWidget->tabText(index);
+    int tabIndex = m_tabWidget->currentIndex();
+    QString tabName = m_tabWidget->tabText(tabIndex);
     QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
     QDomNodeList filterList = tabNode.childNodes();
 
@@ -122,16 +122,28 @@ QStandardItemModel* ConfigUI::getFilterList() {
     return listModel;
 }
 
+void ConfigUI::updateFilterToXml(QString tabName, QString filterName, QString filterAttr) {
+
+    QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
+    QDomElement filterNode = tabNode.firstChildElement(filterName);
+    filterNode.setAttribute("visible", filterAttr);
+//    m_Doc.documentElement().firstChildElement(tabName).firstChildElement(filterName)
+//            .setAttribute("visible", filterAttr);
+}
+
 void ConfigUI::addFilterToGui() {
     QStringList filterList;
     QModelIndexList listModel = m_listView->selectionModel()->selectedIndexes();
     for(int ii=0; ii < listModel.count(); ++ii) {
         QStringList dataTokens = listModel.at(ii).data(Qt::DisplayRole).toString().split(':');
         filterList.append(dataTokens.at(0));
-        printf("\n%i. %s\n", ii+1, filterList.at(ii).toStdString().c_str());
+//        printf("\n%i. %s\n", ii+1, filterList.at(ii).toStdString().c_str());
     }
 
     QWidget *tab = m_tabWidget->currentWidget();
+    int tabIndex = m_tabWidget->currentIndex();
+    QString tabName = m_tabWidget->tabText(tabIndex);
+
     for(int ii = 0; ii < tab->layout()->count(); ++ii)
     {
         QLayoutItem* item = tab->layout()->itemAt(ii);
@@ -141,7 +153,8 @@ void ConfigUI::addFilterToGui() {
             QString filterName = static_cast<QGroupBox*>(item->widget())->title();
             if (filterList.contains(filterName, Qt::CaseInsensitive)){
                 item->widget()->setVisible(true);
-                printf("\n%s\n", filterName.toStdString().c_str());
+                updateFilterToXml(tabName, filterName, "true");
+//                printf("\n%s\n", filterName.toStdString().c_str());
             }
         }
     }
@@ -153,7 +166,7 @@ void ConfigUI::addFilterToGui() {
 void ConfigUI::showFrameBox() {
 
     m_addFilter->setEnabled(false);
-    m_listView->setModel(getFilterList());
+    m_listView->setModel(getFilterFromXml());
     m_frameBox->show();
 }
 

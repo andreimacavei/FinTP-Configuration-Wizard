@@ -41,7 +41,9 @@ public slots:
 private:
     void createMenu();
     void createFrameBox();
-    QStandardItemModel* getFilterList();
+    void updateFilterToXml(const QString tabName, const QString filterName,
+                           QString filterAttr);
+    QStandardItemModel* getFilterFromXml();
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
     QTabWidget *m_tabWidget;
