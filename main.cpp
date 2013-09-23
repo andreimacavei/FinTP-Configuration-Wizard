@@ -7,7 +7,7 @@ void setCenterOfApplication(QWidget* widget)
     QDesktopWidget* desktop = QApplication::desktop();
     int width = desktop->width();
     int height = desktop->height();
-    widget->move(width/4, height/4);
+    widget->move(width/4, height/5);
 }
 
 int main(int argc, char *argv[])
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     else
         fileName = QString(argv[0]) + ".xml";
     ConfigUI *configUi = new ConfigUI(fileName);
-    configUi->resize(600, 400);
+    configUi->resize(600, 500);
     setCenterOfApplication(configUi);
     configUi->show();
 

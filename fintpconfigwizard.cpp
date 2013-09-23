@@ -32,6 +32,7 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     connect(m_addFilter, SIGNAL(clicked()),this, SLOT(showFrameBox()));
     m_delFilter = new QPushButton("Remove Filter");
     connect(m_addFilter, SIGNAL(clicked()),this, SLOT(removeFilter()));
+    m_delFilter->setEnabled(false);
     QToolBar *toolBar = new QToolBar;
     toolBar->setToolButtonStyle(Qt::ToolButtonTextOnly);
     toolBar->addWidget(m_addFilter);
@@ -158,7 +159,7 @@ void ConfigUI::addFilterToGui() {
     }
 
     m_addFilter->setEnabled(true);
-    m_delFilter->setEnabled(true);
+//    m_delFilter->setEnabled(true);
     m_frameBox->hide();
 }
 
@@ -177,6 +178,7 @@ void ConfigUI::showFrameBox() {
 void ConfigUI::hideFrameBox() {
 
     m_addFilter->setEnabled(true);
+//    m_delFilter->setEnabled(true);
     m_frameBox->hide();
 }
 

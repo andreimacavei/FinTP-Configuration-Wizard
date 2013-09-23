@@ -1,84 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-  <configSections name="MQConnector">
-  
+<configSections name="Connector">
 	<sectionGroup name="Service">
-	  <section name="Service"/>
-	  <section name="Help"/>
+		<section name="Service"/>
+		<section name="Help"/>
 	</sectionGroup>
 	
 	<sectionGroup name="Fetcher">
-	  <section name="Fetcher"/>
-	  <section name="qPIFilter_0" />
-	  <section name="qPIFilter_1" />
-	  <section name="qPIFilter_2" />
-	  <section name="Watcher" />
-	  <section name="Help"/>
+		<section name="Fetcher"/>
+		<section name="qPIFilter_0" />
+		<section name="qPIFilter_1" />
+		<section name="qPIFilter_2" />
+		<section name="qPIFilter_Add" />
+		<section name="Watcher" />
+		<section name="Help"/>
 	</sectionGroup>
-	
+				
 	<sectionGroup name="Publisher">
-	  <section name="qPIFilter_0"/>
-	  <section name="Watcher"/>
-	  <section name="Help"/>
+		<section name="qPIFilter_0"/>
+		<section name="Watcher"/>
+		<section name="Help"/>
 	</sectionGroup>
 	
 	<sectionGroup name="EventsPublisher">
-	  <section name="EventsPublisher"/>
-	  <section name="Help"/>
+		<section name="EventsPublisher"/>
+		<section name="Help"/>
 	</sectionGroup>
 	
 	<sectionGroup name="Log">
-	  <section name="Log"/>
-	  <section name="Help"/>
+		<section name="Log"/>
+		<section name="Help"/>
 	</sectionGroup>
-  		  
-  </configSections>
-	
-  <Service>
+</configSections>
+			
+<Service>
 	<Service>
 		<key name="ServiceName" alias="Service Name"></key>
 	</Service>
 	<Help>
 		<key name="Help" alias="Help"><!--Predefined text--></key>
 	</Help>
-  </Service>
-  <Fetcher>
+</Service>
+<Fetcher>
 	<Fetcher>
-	  <key name ="on" list="true,false" alias="Status"></key>
-	  <key name ="type" list="MQ,File,DB" alias="Type"></key>
-	  <key name ="AppToMQSeries.BatchManagerType" list="FlatFile,XMLFile" alias="Batch format">XMLfile</key>
-	  <key name ="AppToMQSeries.BatchXsltFile" alias="Split batch xslt">getGroupElement.xslt</key>
+		<key name ="on" list="true,false" alias="Status"></key>
+		<key name ="type" list="MQ,File,DB" alias="Type"></key>
+		<key name ="AppToMQSeries.BatchManagerType" list="FlatFile,XMLFile" alias="Batch format">XMLfile</key>
+		<key name ="AppToMQSeries.BatchXsltFile" alias="Split batch xslt">getGroupElement.xslt</key>
 	</Fetcher>
-	<qPIFilter_1 visible = "true">
-	  <key name ="order" list="" alias="Order number">1</key>
-	  <key name ="type" list="" alias="Filter type">BASE64</key>
-	  <key name ="xPath" list="" alias="Payload path">/</key>
+	<qPIFilter_1 visible="false">
+		<key name ="order" list="" alias="Order number">1</key>
+		<key name ="type" list="" alias="Filter type">BASE64</key>
+		<key name ="xPath" list="" alias="Payload path">/</key>
+		<key name ="keepOriginal" list="" alias="Keep original message">/</key>
 	</qPIFilter_1>
-	<qPIFilter_2 visible = "false">
-	  <key name ="order" list="" alias="Order number">2</key>
-	  <key name ="type" list="" alias="Filter type">XSLT</key>
-	  <key name ="xsltFile" list="" alias="Transform file">ACH2QPI.xslt</key>
+	<qPIFilter_2 visible="false">
+		<key name ="order" list="" alias="Order number">2</key>
+		<key name ="type" list="" alias="Filter type">XSLT</key>
+		<key name ="xsltFile" list="" alias="Transform file">ACH2QPI.xslt</key>
 	</qPIFilter_2>
-	<qPIFilter_3 visible = "false">
-	  <key name ="order" list="" alias="Order number">3</key>
-	  <key name ="type" list="WMQ,AMQ" alias="Filter type"></key>
-	  <key name ="WMQQMgr" list="" alias="Queue manager"></key>
-	  <key name ="WMQQueue" list="" alias="Queue name"></key>
-	  <key name ="MQUri" list="" alias="Host queuing channel "></key>
+	<qPIFilter_3 visible="false">
+		<key name ="order" list="" alias="Order number">2</key>
+		<key name ="type" list="" alias="Filter type">Template</key>
+		<key name ="templateFile" list="" alias="Transform file">Template.xml</key>
 	</qPIFilter_3>
+	<qPIFilter_4 visible="true">
+		<key name ="order" list="" alias="Order number">3</key>
+		<key name ="type" list="WMQ,AMQ" alias="Filter type"></key>
+		<key name ="WMQQMgr" list="" alias="Queue manager"></key>
+		<key name ="WMQQueue" list="" alias="Queue name"></key>
+		<key name ="MQUri" list="" alias="Host queuing channel "></key>
+	</qPIFilter_4>
 	<Watcher>
-	  <key name ="AppToMQ.Type" list="WMQ,AMQ" alias="Queueing server"></key>
-	  <key name ="AppToMQSeries.AppQueue" alias="Queue">qPIFTM.FromApp</key>
-	  <key name ="AppToMQSeries.QueueManager" alias="Queue manager"></key>
-	  <key name ="AppToMQSeries.URI" alias="Host queuing channel"></key>
-	  <key name ="AppToMQSeries.BackupQueue" alias="Backup queue"></key>
+		<key name ="AppToMQ.Type" list="WMQ,AMQ" alias="Queueing server"></key>
+		<key name ="AppToMQSeries.AppQueue" alias="Queue">qPIFTM.FromApp</key>
+		<key name ="AppToMQSeries.QueueManager" alias="Queue manager"></key>
+		<key name ="AppToMQSeries.URI" alias="Host queuing channel"></key>
+		<key name ="AppToMQSeries.BackupQueue" alias="Backup queue"></key>
 	</Watcher>
 	<Help>
 		<key name="Help" alias="Help"><!--Predefined text--></key>
 	</Help>
-  </Fetcher>
-  
-  <Publisher>
+</Fetcher>
+
+<Publisher>
 	<Publisher>
 		<key name ="on" list="true,false" alias="Status"></key>
 		<key name ="type" list="MQ,File,DB" alias="Type">MQ</key>
@@ -90,20 +95,20 @@
 		<key name="MQSeriesToApp.BackupQueue" alias="Backup queue"></key>
 		<key name="MQSeriesToApp.MessageFormat" List="MQSTR, MQHRF2, MQBINARY" alias="Queuing message format"></key>
 	</Publisher>
-	<qPIFilter_0 visible = "true">
-	  <key name ="order" list="" alias="Order number">0</key>
-	  <key name ="type" list="WMQ,AMQ" alias="Filter type"></key>
-	  <key name ="batch" list="true,false" alias="Batch processing "></key>
-	  <key name ="WMQMgr" list="" alias="Queue manager"></key>
-	  <key name ="WMQQueue" list="" alias="Queue name"></key>
-	  <key name ="MQUri" list="" alias="Host queuing channel "></key>
+	<qPIFilter_0 visible="true">
+		<key name ="order" list="" alias="Order number">0</key>
+		<key name ="type" list="WMQ,AMQ" alias="Filter type"></key>
+		<key name ="batch" list="true,false" alias="Batch processing "></key>
+		<key name ="WMQMgr" list="" alias="Queue manager"></key>
+		<key name ="WMQQueue" list="" alias="Queue name"></key>
+		<key name ="MQUri" list="" alias="Host queuing channel "></key>
 	</qPIFilter_0>
 	<Help>
 		<key name="Help" alias="Help"><!--Predefined text--></key>
 	</Help>
-  </Publisher>
-  
-  <EventsPublisher>
+</Publisher>
+
+<EventsPublisher>
 	<EventsPublisher>
 		<key name="EventsThreaded" list="true,false" alias="Status"></key>
 		<key name="Log.PublisherMQ.Type" list="WMQ,AMQ" alias="Publisher type"></key>
@@ -114,9 +119,9 @@
 	<Help>
 		<key name="Help" alias="Help"><!--Predefined text--></key>
 	</Help>
-  </EventsPublisher>
-  
-  <Log>
+</EventsPublisher>
+
+<Log>
 	<Log>
 		<key name="LogMaxExtraFiles" alias="Extra files per thread">3</key>
 		<key name="LogMaxLines" alias="Max. lines">300000</key>
@@ -125,5 +130,5 @@
 	<Help>
 		<key name="Help" alias="Help"><!--Predefined text--></key>
 	</Help>
-  </Log>
+</Log>
 </configuration>
