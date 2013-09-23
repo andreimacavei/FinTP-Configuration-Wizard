@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
         fileName = QString(argv[0]) + ".xml";
     ConfigUI *configUi = new ConfigUI(fileName);
     configUi->resize(600, 400);
-//    configUi->setFixedSize(600,400);
     setCenterOfApplication(configUi);
     configUi->show();
 

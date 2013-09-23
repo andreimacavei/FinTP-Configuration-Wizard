@@ -87,8 +87,7 @@ void ConfigUI::createFrameBox() {
     layout->addWidget(m_acceptButton,1,1);
     layout->addWidget(m_cancelButton,1,2);
     m_frameBox->setLayout(layout);
-    this->sizeHint();
-    m_frameBox->move(this->x() + 150, this->y() + 100);
+    m_frameBox->move(this->x() + 500, this->y() + 300);
     m_frameBox->hide();
 }
 
@@ -127,8 +126,6 @@ void ConfigUI::updateFilterToXml(QString tabName, QString filterName, QString fi
     QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
     QDomElement filterNode = tabNode.firstChildElement(filterName);
     filterNode.setAttribute("visible", filterAttr);
-//    m_Doc.documentElement().firstChildElement(tabName).firstChildElement(filterName)
-//            .setAttribute("visible", filterAttr);
 }
 
 void ConfigUI::addFilterToGui() {
@@ -390,6 +387,8 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                 filterName = childList.at(j).toElement().attribute("name");
             }
             QGroupBox* filterSectionGroup = new QGroupBox(filterName);
+            QFormLayout *groupLayout = new QFormLayout;
+
             filterSectionGroup->setObjectName(visibleAttr);
             if (visibleAttr == "false"){
                 filterSectionGroup->setHidden(true);
@@ -397,7 +396,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             layout->addWidget(filterSectionGroup);
 
             /*
-             * TODO : Use stretch factor on all groupBoxes
+             * TODO : Modify implicit stretch factor on all groupBoxes
              */
 
             while(!keyNode.isNull())
@@ -417,7 +416,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                         comboBox->setCurrentText(keyText);
                     keyLabel = new QLabel(keyAlias);
                     keyLabel->setObjectName(keyName);
-                    layout->addRow(keyLabel, comboBox);
+                    groupLayout->addRow(keyLabel, comboBox);
                 }
                 else{
                     if (keyData.tagName() == "section")
@@ -426,10 +425,11 @@ void ConfigUI::parseXML(const QDomDocument &document) {
                     }
                     keyLabel = new QLabel(keyAlias);
                     keyLabel->setObjectName(keyName);
-                    layout->addRow(keyLabel, new QLineEdit(keyText));
+                    groupLayout->addRow(keyLabel, new QLineEdit(keyText));
                 }
                 keyNode = keyNode.nextSibling();
             }
+            filterSectionGroup->setLayout(groupLayout);
         }
 
         tab->setLayout(layout);
