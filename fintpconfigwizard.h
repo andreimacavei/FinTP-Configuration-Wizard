@@ -33,6 +33,7 @@ private slots:
     void showFrameBox();
     void hideFrameBox();
     void addFilterToGui();
+    void removeFilter();
 
 public slots:
     void openFile();
@@ -56,6 +57,7 @@ private:
     QSignalMapper *m_sigMapper;
     QList<QPushButton*> m_buttonList;
     QPushButton *m_addFilter;
+    QPushButton *m_delFilter;
     QPushButton *m_acceptButton;
     QPushButton *m_cancelButton;
     QFrame *m_frameBox;

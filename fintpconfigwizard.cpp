@@ -30,9 +30,12 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     createFrameBox();
     m_addFilter = new QPushButton("Add Filter");
     connect(m_addFilter, SIGNAL(clicked()),this, SLOT(showFrameBox()));
+    m_delFilter = new QPushButton("Remove Filter");
+    connect(m_addFilter, SIGNAL(clicked()),this, SLOT(removeFilter()));
     QToolBar *toolBar = new QToolBar;
     toolBar->setToolButtonStyle(Qt::ToolButtonTextOnly);
     toolBar->addWidget(m_addFilter);
+    toolBar->addWidget(m_delFilter);
 
     createMenu();
     this->setMenuBar(m_menuBar);
@@ -134,7 +137,6 @@ void ConfigUI::addFilterToGui() {
     for(int ii=0; ii < listModel.count(); ++ii) {
         QStringList dataTokens = listModel.at(ii).data(Qt::DisplayRole).toString().split(':');
         filterList.append(dataTokens.at(0));
-//        printf("\n%i. %s\n", ii+1, filterList.at(ii).toStdString().c_str());
     }
 
     QWidget *tab = m_tabWidget->currentWidget();
@@ -151,18 +153,23 @@ void ConfigUI::addFilterToGui() {
             if (filterList.contains(filterName, Qt::CaseInsensitive)){
                 item->widget()->setVisible(true);
                 updateFilterToXml(tabName, filterName, "true");
-//                printf("\n%s\n", filterName.toStdString().c_str());
             }
         }
     }
 
     m_addFilter->setEnabled(true);
+    m_delFilter->setEnabled(true);
     m_frameBox->hide();
+}
+
+void ConfigUI::removeFilter() {
+
 }
 
 void ConfigUI::showFrameBox() {
 
     m_addFilter->setEnabled(false);
+    m_delFilter->setEnabled(false);
     m_listView->setModel(getFilterFromXml());
     m_frameBox->show();
 }
@@ -288,70 +295,70 @@ void ConfigUI::saveXML(QString saveType)
         if ( tab->layout() == NULL ){
             continue;
         }
+
         QDomElement filterElem;
         QDomElement keyElem;
-
         for(int jj = 0; jj < tab->layout()->count(); ++jj)
         {
-            QLayoutItem* item = tab->layout()->itemAt(jj);
-            QString widgetType = QString(item->widget()->metaObject()->className());
-
-            if(widgetType == "QGroupBox"){
-                QString filterName = static_cast<QGroupBox*>(item->widget())->title();
-                if (tabName == "configSections"){
-                    filterElem = domDocument.createElement("sectionGroup");
-                    filterElem.setAttribute("name", filterName);
-                }
-                else{
-                    filterElem = domDocument.createElement(filterName);
-                    if (item->widget()->objectName() != "")
-                        filterElem.setAttribute("visible", item->widget()->objectName());
-                }
-                tabElem.appendChild(filterElem);
-                continue;
-            }
-            if(widgetType == "QLabel"){
-                QString atrName;
-                if (tabName == "configSections"){
-                    keyElem = domDocument.createElement("section");
-                    atrName = "name";
-                }
-                else{
-                    keyElem = domDocument.createElement("key");
-                    atrName = "alias";
-                    keyElem.setAttribute("name", item->widget()->objectName());
-                }
-                filterElem.appendChild(keyElem);
-                QString labelText = static_cast<QLabel*>(item->widget())->text();
-                keyElem.setAttribute(atrName, labelText);
+            QLayoutItem* groupBox = tab->layout()->itemAt(jj);
+            QString filterName = static_cast<QGroupBox*>(groupBox->widget())->title();
+            if (tabName == "configSections"){
+                filterElem = domDocument.createElement("sectionGroup");
+                filterElem.setAttribute("name", filterName);
             }
             else{
-                if(widgetType == "QLineEdit"){
-                    QString lineEdit = static_cast<QLineEdit*>(item->widget())->text();
-                    if (lineEdit != ""){
-                        QDomText fieldText = domDocument.createTextNode(lineEdit);
-                        keyElem.appendChild(fieldText);
+                filterElem = domDocument.createElement(filterName);
+                if (groupBox->widget()->objectName() != "")
+                    filterElem.setAttribute("visible", groupBox->widget()->objectName());
+            }
+            tabElem.appendChild(filterElem);
+
+            for(int k = 0; k < groupBox->widget()->layout()->count(); ++k)
+            {
+                QLayoutItem* item = groupBox->widget()->layout()->itemAt(k);
+                QString widgetType = QString(item->widget()->metaObject()->className());
+                if(widgetType == "QLabel"){
+                    QString atrName;
+                    if (tabName == "configSections"){
+                        keyElem = domDocument.createElement("section");
+                        atrName = "name";
                     }
+                    else{
+                        keyElem = domDocument.createElement("key");
+                        atrName = "alias";
+                        keyElem.setAttribute("name", item->widget()->objectName());
+                    }
+                    filterElem.appendChild(keyElem);
+                    QString labelText = static_cast<QLabel*>(item->widget())->text();
+                    keyElem.setAttribute(atrName, labelText);
                 }
                 else{
-                    if (widgetType == "QComboBox"){
-                        QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
-                        if (!comboBox){
-                            QString error = "Unknown Widget";
-                            QMessageBox::critical(this, "TabDialog::saveXML", error, QMessageBox::Ok);
+                    if(widgetType == "QLineEdit"){
+                        QString lineEdit = static_cast<QLineEdit*>(item->widget())->text();
+                        if (lineEdit != ""){
+                            QDomText fieldText = domDocument.createTextNode(lineEdit);
+                            keyElem.appendChild(fieldText);
                         }
-                        QStringList list;
-                        for(int k = 0; k < comboBox->count(); ++k){
-                            list.append(comboBox->itemText(k));
-                        }
-                        keyElem.setAttribute("list", list.join(','));
-                        QDomText currentItem = domDocument.createTextNode(comboBox->currentText());
-                        keyElem.appendChild(currentItem);
                     }
-                }//end of if(widgetType == "QLineEdit)
-
-            }//end of if(widgetType == "QLabel")
-        }//end of for...
+                    else{
+                        if (widgetType == "QComboBox"){
+                            QComboBox *comboBox = dynamic_cast<QComboBox*>(item->widget());
+                            if (!comboBox){
+                                QString error = "Unknown Widget";
+                                QMessageBox::critical(this, "TabDialog::saveXML", error, QMessageBox::Ok);
+                            }
+                            QStringList list;
+                            for(int m = 0; m < comboBox->count(); ++m){
+                                list.append(comboBox->itemText(m));
+                            }
+                            keyElem.setAttribute("list", list.join(','));
+                            QDomText currentItem = domDocument.createTextNode(comboBox->currentText());
+                            keyElem.appendChild(currentItem);
+                        }
+                    }//end of if(widgetType == "QLineEdit)
+                }//end of if(widgetType == "QLabel")
+            }//end of for(int k = 0;...)
+        }//end of for(int jj = 0;...)
     }
     m_tabWidget->removeTab(0);
     writeFileStream(domDocument, saveType);
