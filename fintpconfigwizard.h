@@ -43,7 +43,7 @@ private slots:
      *
      * @param doc  the QDomDocument to be written on file.
      * @param saveType  a string used to decide if the Dom document should be
-     * saved on a new file or override the currently opened file.
+     * saved on a new file or override the file that has generated current GUI.
      */
     void writeFileStream(QDomDocument doc, QString saveType);
 
@@ -92,7 +92,9 @@ public slots:
     /**
      * @brief saveXML  Saves the GUI to a Dom parser using
      * a QDomDocument object
-     * @param saveType
+     *
+     * @param saveType  a string used to decide if the Dom document should be
+     * saved on a new file or override the file that has generated current GUI.
      */
     void saveXML(QString saveType);
 
@@ -125,6 +127,7 @@ private:
      * @brief getFilterFromXml  Retrieves the missing filters from the
      * opened xml file, and returns a list with those filters corresponding to
      * the currently selected tab.
+     *
      * @return  a list with the missing filters as a QStandardItemModel object
      */
     QStandardItemModel* getFilterFromXml();

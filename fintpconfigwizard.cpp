@@ -347,13 +347,14 @@ QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
 }
 
 /**
- * @brief ConfigUI::saveXML  - Save the GUI to a Dom parser using
- * a QDomDocument object
+ * @brief ConfigUI::saveXML  Save the GUI to a Dom document using
+ * QDomDocument class
  * @param saveType  a string used to decide if Dom document should be saved
  * on a new file or override the currently opened file.
  */
 void ConfigUI::saveXML(QString saveType)
 {
+    // Create a QDomDocument to save the current GUI
     QDomDocument domDocument;
     QDomProcessingInstruction instr = domDocument.createProcessingInstruction(
                         "xml", "version='1.0' encoding='UTF-8'");
@@ -363,8 +364,11 @@ void ConfigUI::saveXML(QString saveType)
 
     QWidget *removedTab = static_cast<QWidget*>(m_removedTabs.at(0));
     m_tabWidget->insertTab(0, removedTab, "configSections");
+
     for(int ii = 0; ii < m_tabWidget->count(); ++ii)
     {
+        // Each Tab is mapped to a child node (main Filter) of the root
+        // tag in DOM document
         QWidget *tab = m_tabWidget->widget(ii);
         QString tabName = m_tabWidget->tabText(ii);
         QDomElement tabElem = domDocument.createElement(tabName);
@@ -379,6 +383,9 @@ void ConfigUI::saveXML(QString saveType)
 
         QDomElement filterElem;
         QDomElement keyElem;
+
+        // For each widget in the Tab we create child nodes in the
+        // DOM document tree
         for(int jj = 0; jj < tab->layout()->count(); ++jj)
         {
             QLayoutItem* groupBox = tab->layout()->itemAt(jj);
@@ -446,12 +453,13 @@ void ConfigUI::saveXML(QString saveType)
 }
 
 /**
- * @brief ConfigUI::parseXML  - Parses the input xml file using a QDomDocument
+ * @brief ConfigUI::parseXML  Parses the input xml file using a QDomDocument
  * then generates the GUI.
  * @param document  the QDomDocument class used to parse a xml file
  */
 void ConfigUI::parseXML(const QDomDocument &document) {
 
+    // Get the root of this XML
     QDomElement docElem = document.documentElement();
     QString rootTag = docElem.tagName();
     if(rootTag != "configuration"){
@@ -460,25 +468,31 @@ void ConfigUI::parseXML(const QDomDocument &document) {
     }
 
     int pos = 0;
+    // Get all direct child nodes (main Filters) for root tag.
     QDomNodeList siblings = docElem.childNodes();
     for(int i = 0; i < siblings.count(); i++)
     {
+        // For each main Filters we create a separate Tab widget
         QString tabName = siblings.at(i).toElement().tagName();
         QWidget *tab = new QWidget();
+
         QFormLayout* layout = new QFormLayout;
         QDomElement el = siblings.at(i).toElement();
         QDomNodeList childList = el.childNodes();
         layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
 
+        // Get all child nodes (child Filters) for this main Filter
         for(int j = 0; j < childList.count(); j++)
         {
-            QDomNode keyNode = childList.at(j).firstChild();
+            // For each child Filter we create a GroupBox widget on current tab
+
             QString filterName = childList.at(j).toElement().tagName();
             QString visibleAttr = childList.at(j).toElement().attribute("visible");
 
             if (filterName == "sectionGroup"){
                 filterName = childList.at(j).toElement().attribute("name");
             }
+
             QGroupBox* filterSectionGroup = new QGroupBox(filterName);
             QFormLayout *groupLayout = new QFormLayout;
 
@@ -491,9 +505,12 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             /*
              * TODO : Modify implicit stretch factor on all groupBoxes
              */
-
+            // Get all keys attributes for this filter.
+            QDomNode keyNode = childList.at(j).firstChild();
             while(!keyNode.isNull())
             {
+                // For each key we create a different GUI widget depending
+                // on it's functionality: combo box, line edit or label
                 QDomElement keyData = keyNode.toElement();
                 QString keyName = keyData.attribute("name");
                 QString keyAlias = keyData.attribute("alias");
@@ -525,6 +542,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             filterSectionGroup->setLayout(groupLayout);
         }
 
+        // Finnaly we add our Tab object to the main Tab widget
         tab->setLayout(layout);
         this->m_tabWidget->addTab(tab, tabName);
         if(tabName == "configSections"){
