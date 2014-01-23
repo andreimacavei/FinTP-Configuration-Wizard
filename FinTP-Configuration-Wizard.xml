@@ -37,9 +37,9 @@
     </Service>
     <Fetcher>
         <Fetcher>
-            <key alias="Status" name="on" list="true,false">true</key>
-            <key alias="Type" name="type" list="MQ,File,DB">MQ</key>
-            <key alias="Batch format" name="AppToMQSeries.BatchManagerType" list="FlatFile,XMLFile">FlatFile</key>
+            <key alias="Status" list="true,false" name="on">true</key>
+            <key alias="Type" list="MQ,File,DB" name="type">MQ</key>
+            <key alias="Batch format" list="FlatFile,XMLFile" name="AppToMQSeries.BatchManagerType">FlatFile</key>
             <key alias="Split batch xslt" name="AppToMQSeries.BatchXsltFile">getGroupElement.xslt</key>
         </Fetcher>
         <qPIFilter_1 visible="true">
@@ -58,15 +58,15 @@
             <key alias="Filter type" name="type">Template</key>
             <key alias="Transform file" name="templateFile">Template.xml</key>
         </qPIFilter_3>
-        <qPIFilter_4 visible="true">
+        <qPIFilter_4 visible="false">
             <key alias="Order number" name="order">3</key>
-            <key alias="Filter type" name="type" list="WMQ,AMQ">WMQ</key>
+            <key alias="Filter type" list="WMQ,AMQ" name="type">WMQ</key>
             <key alias="Queue manager" name="WMQQMgr"/>
             <key alias="Queue name" name="WMQQueue"/>
             <key alias="Host queuing channel " name="MQUri"/>
         </qPIFilter_4>
         <Watcher>
-            <key alias="Queueing server" name="AppToMQ.Type" list="WMQ,AMQ">WMQ</key>
+            <key alias="Queueing server" list="WMQ,AMQ" name="AppToMQ.Type">WMQ</key>
             <key alias="Queue" name="AppToMQSeries.AppQueue">qPIFTM.FromApp</key>
             <key alias="Queue manager" name="AppToMQSeries.QueueManager"/>
             <key alias="Host queuing channel" name="AppToMQSeries.URI"/>
@@ -78,10 +78,10 @@
     </Fetcher>
     <Publisher>
         <Publisher>
-            <key alias="Status" name="on" list="true,false">true</key>
-            <key alias="Type" name="type" list="MQ,File,DB">MQ</key>
-            <key alias="Batch format" name="MQSeriesToApp.BatchManagerType" list="XMLfile,FlatFile">XMLfile</key>
-            <key alias="Queueing server" name="MQToApp.Type" list="WMQ,AMQ">WMQ</key>
+            <key alias="Status" list="true,false" name="on">true</key>
+            <key alias="Type" list="MQ,File,DB" name="type">MQ</key>
+            <key alias="Batch format" list="XMLfile,FlatFile" name="MQSeriesToApp.BatchManagerType">XMLfile</key>
+            <key alias="Queueing server" list="WMQ,AMQ" name="MQToApp.Type">WMQ</key>
             <key alias="Queue" name="MQSeriesToApp.AppQueue"/>
             <key alias="Queue manager" name="MQSeriesToApp.QueueManager"/>
             <key alias="Host queuing channel" name="MQSeriesToApp.URI"/>
@@ -90,8 +90,8 @@
         </Publisher>
         <qPIFilter_0 visible="true">
             <key alias="Order number" name="order">0</key>
-            <key alias="Filter type" name="type" list="WMQ,AMQ">WMQ</key>
-            <key alias="Batch processing " name="batch" list="true,false">true</key>
+            <key alias="Filter type" list="WMQ,AMQ" name="type">WMQ</key>
+            <key alias="Batch processing " list="true,false" name="batch">true</key>
             <key alias="Queue manager" name="WMQMgr"/>
             <key alias="Queue name" name="WMQQueue"/>
             <key alias="Host queuing channel " name="MQUri"/>
@@ -102,8 +102,8 @@
     </Publisher>
     <EventsPublisher>
         <EventsPublisher>
-            <key alias="Status" name="EventsThreaded" list="true,false">true</key>
-            <key alias="Publisher type" name="Log.PublisherMQ.Type" list="WMQ,AMQ">WMQ</key>
+            <key alias="Status" list="true,false" name="EventsThreaded">true</key>
+            <key alias="Publisher type" list="WMQ,AMQ" name="Log.PublisherMQ.Type">WMQ</key>
             <key alias="Queue" name="Log.PublisherMQ.Q">Events</key>
             <key alias="Queue Manager" name="Log.PublisherMQ.QM"/>
             <key alias="Host queueing channel" name="Log.PublisherMQ.URI"/>
