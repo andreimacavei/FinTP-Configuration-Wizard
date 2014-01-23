@@ -4,13 +4,23 @@
 #include <QDomNodeList>
 #include <QTextStream>
 
+/**
+ * @brief ConfigUI::ConfigUI  - Constructs the main window using a
+ *  QMainWindow object.
+ *
+ * @param fileName  the file used to generate the UI
+ * @param parent  the parent widget of all widgets used
+ */
 ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     : QMainWindow(parent)
 {
+
     QFileInfo fileInfo(fileName);
     m_xmlPath = fileInfo.absoluteFilePath();
-    m_tabWidget = new QTabWidget;
 
+    /*
+     * Try to open the XML file to generate our UI
+     */
     QFile* file = new QFile(fileName);
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString errorMessage = "Could not open " + fileName;
@@ -24,22 +34,36 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
         return;
     }
 
+    /*
+     * We're creating a new Tab Widget Object to hold application's tabs
+     */
+    m_tabWidget = new QTabWidget;
     parseXML(m_Doc);
     file->close();
 
-    createFrameBox();
-    m_addFilter = new QPushButton("Add Filter");
+    /*
+     * Create additional elements to manage our UI: dialog box, buttons and
+     *  toolbar
+     */
+    createFrameBox();   // pop-up dialog we use to select missing filters
+
+    m_addFilter = new QPushButton("Add Filter");    // button for add filter
     connect(m_addFilter, SIGNAL(clicked()),this, SLOT(showFrameBox()));
-    m_delFilter = new QPushButton("Remove Filter");
+    m_delFilter = new QPushButton("Remove Filter"); // button for delete filter
     connect(m_addFilter, SIGNAL(clicked()),this, SLOT(removeFilter()));
     m_delFilter->setEnabled(false);
+
     QToolBar *toolBar = new QToolBar;
     toolBar->setToolButtonStyle(Qt::ToolButtonTextOnly);
     toolBar->addWidget(m_addFilter);
     toolBar->addWidget(m_delFilter);
 
+    /*
+     * Create the menu and scroll area for our main window
+     */
     createMenu();
     this->setMenuBar(m_menuBar);
+
     QScrollArea* scrollArea = new QScrollArea();
     scrollArea->setWidget(m_tabWidget);
     scrollArea->setWidgetResizable(true);
@@ -49,16 +73,26 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     setWindowTitle(tr("FinTP Config GUI"));
 }
 
+/**
+ * @brief ConfigUI::createMenu  - Creates a menu bar for the main window using
+ * a QMenuBar widget.
+ */
 void ConfigUI::createMenu()
 {
+    // Creates a menu bar and the menu: File
     m_menuBar = new QMenuBar;
     m_fileMenu = new QMenu(tr("&File"), this);
-    m_fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
 
+    // We're creating the menu's entries and their associated actions
+    // File -> Open
+    m_fileMenu->addAction(tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
+    // File -> Save
     QAction *actionSave = new QAction("&Save", this);
     actionSave->setShortcut((QKeySequence::Save));
+    // File -> SaveAs
     QAction *actionSaveAs = new QAction("Save &As", this);
     actionSaveAs->setShortcut(QKeySequence::SaveAs);
+
     m_fileMenu->addAction(actionSave);
     m_fileMenu->addAction(actionSaveAs);
 
@@ -69,10 +103,16 @@ void ConfigUI::createMenu()
     m_sigMapper->setMapping(actionSaveAs, "saveAs");
     connect(m_sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveXML(QString)));
 
+    // File -> Exit
     m_fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
+
     m_menuBar->addMenu(m_fileMenu);
 }
 
+/**
+ * @brief ConfigUI::createFrameBox  - Creates a FrameBox from which user can
+ *  select and add missing filters to the current tab.
+ */
 void ConfigUI::createFrameBox() {
 
     QGridLayout *layout = new QGridLayout;
@@ -95,6 +135,12 @@ void ConfigUI::createFrameBox() {
     m_frameBox->hide();
 }
 
+/**
+ * @brief ConfigUI::getFilterFromXml  - Retrieves the missing filters from xml
+ * file, for the current selected tab widget and returns a list with them.
+ *
+ * @return  a list with the missing filters as a QStandardItemModel object
+ */
 QStandardItemModel* ConfigUI::getFilterFromXml() {
 
     int tabIndex = m_tabWidget->currentIndex();
@@ -125,6 +171,12 @@ QStandardItemModel* ConfigUI::getFilterFromXml() {
     return listModel;
 }
 
+/**
+ * @brief ConfigUI::updateFilterToXml
+ * @param tabName
+ * @param filterName
+ * @param filterAttr
+ */
 void ConfigUI::updateFilterToXml(QString tabName, QString filterName, QString filterAttr) {
 
     QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
@@ -132,6 +184,10 @@ void ConfigUI::updateFilterToXml(QString tabName, QString filterName, QString fi
     filterNode.setAttribute("visible", filterAttr);
 }
 
+/**
+ * @brief ConfigUI::addFilterToGui  Displays the selected filters on the current tab
+ * of the GUI, as a GroupBox Widget.
+ */
 void ConfigUI::addFilterToGui() {
     QStringList filterList;
     QModelIndexList listModel = m_listView->selectionModel()->selectedIndexes();
@@ -159,7 +215,7 @@ void ConfigUI::addFilterToGui() {
     }
 
     m_addFilter->setEnabled(true);
-//    m_delFilter->setEnabled(true);
+    m_delFilter->setEnabled(true);
     m_frameBox->hide();
 }
 
@@ -167,6 +223,10 @@ void ConfigUI::removeFilter() {
 
 }
 
+/**
+ * @brief ConfigUI::showFrameBox  Displays the frame box from where user can
+ * add new filters.
+ */
 void ConfigUI::showFrameBox() {
 
     m_addFilter->setEnabled(false);
@@ -175,13 +235,20 @@ void ConfigUI::showFrameBox() {
     m_frameBox->show();
 }
 
+/**
+ * @brief ConfigUI::hideFrameBox  Hides the frame box from the screen.
+ */
 void ConfigUI::hideFrameBox() {
 
     m_addFilter->setEnabled(true);
-//    m_delFilter->setEnabled(true);
+    m_delFilter->setEnabled(true);
     m_frameBox->hide();
 }
 
+/**
+ * @brief ConfigUI::openFile  Shows a dialog box for user to choose which
+ * file to be opened, then resets and generates the GUI from this file.
+ */
 void ConfigUI::openFile()
 {
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), m_xmlPath,
@@ -203,6 +270,10 @@ void ConfigUI::openFile()
 
 }
 
+/**
+ * @brief ConfigUI::resetUI  De-allocates all widgets objects from  the
+ * main window.
+ */
 void ConfigUI::resetUI()
 {
     while(m_tabWidget->count() > 0)
@@ -223,6 +294,12 @@ void ConfigUI::resetUI()
     }
 }
 
+/**
+ * @brief ConfigUI::writeFileStream  Writes the QDomDocument to a file on disk
+ * @param doc  the QDomDocument to be written on file.
+ * @param saveType  used to decide between save to a new file or override the
+ *  current file.
+ */
 void ConfigUI::writeFileStream(QDomDocument doc, QString saveType)
 {
     QFileInfo fileInfo;
@@ -273,6 +350,11 @@ QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
     return el;
 }
 
+/**
+ * @brief ConfigUI::saveXML  - Save the GUI to a Dom parser using
+ * a QDomDocument object
+ * @param saveType
+ */
 void ConfigUI::saveXML(QString saveType)
 {
     QDomDocument domDocument;
@@ -366,6 +448,11 @@ void ConfigUI::saveXML(QString saveType)
     writeFileStream(domDocument, saveType);
 }
 
+/**
+ * @brief ConfigUI::parseXML  - Parses the input xml file using a QDomDocument
+ * object, then generates the GUI.
+ * @param document  the QDomDocument object used to parse a xml file
+ */
 void ConfigUI::parseXML(const QDomDocument &document) {
 
     QDomElement docElem = document.documentElement();

@@ -1,6 +1,10 @@
 #include "fintpconfigwizard.h"
 #include <QApplication>
 
+/**
+ * @brief setCenterOfApplication  Move the passed widget on screen
+ * @param widget  the widget to be positioned
+ */
 void setCenterOfApplication(QWidget* widget)
 {
     QSize size = widget->sizeHint();
