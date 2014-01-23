@@ -293,8 +293,8 @@ void ConfigUI::resetUI()
  * @brief ConfigUI::writeFileStream  Writes the QDomDocument to a file on disk
  *
  * @param doc  the QDomDocument to be written on file.
- * @param saveType  a string used to decide if the Dom document should be saved
- * on a new file or override the currently opened file.
+ * @param saveType  a string used to decide if the Dom document should be
+ * saved on a new file or override the file that has generated current GUI.
  */
 void ConfigUI::writeFileStream(QDomDocument doc, QString saveType)
 {
@@ -302,6 +302,8 @@ void ConfigUI::writeFileStream(QDomDocument doc, QString saveType)
     QString filePath;
     QFile file;
 
+    // Depending on the saveType param we save the Dom document to a new file
+    // or to the file that has generated current GUI.
     if(saveType == "saveAs"){
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QString(),
                     tr("Xml Files (*.xml *.xslt);;Text Files (*.txt);;HTML Files (*.html);;"
@@ -349,8 +351,8 @@ QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
 /**
  * @brief ConfigUI::saveXML  Save the GUI to a Dom document using
  * QDomDocument class
- * @param saveType  a string used to decide if Dom document should be saved
- * on a new file or override the currently opened file.
+ * @param saveType  a string used to decide if the Dom document should be
+ * saved on a new file or override the file that has generated current GUI.
  */
 void ConfigUI::saveXML(QString saveType)
 {
