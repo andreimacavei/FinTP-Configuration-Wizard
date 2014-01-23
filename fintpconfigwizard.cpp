@@ -41,10 +41,15 @@ ConfigUI::ConfigUI(const QString &fileName, QWidget *parent)
     createFrameBox();
 
     m_addFilter = new QPushButton("Add Filter");    // button for add filter
-    connect(m_addFilter, SIGNAL(clicked()),this, SLOT(showFrameBox()));
     m_delFilter = new QPushButton("Remove Filter"); // button for delete filter
-    connect(m_addFilter, SIGNAL(clicked()),this, SLOT(removeFilter()));
-    m_delFilter->setEnabled(false);
+
+    m_sigMapper2 = new QSignalMapper(this);
+    connect(m_addFilter, SIGNAL(clicked()), m_sigMapper2, SLOT(map()));
+    connect(m_delFilter, SIGNAL(clicked()), m_sigMapper2, SLOT(map()));
+    m_sigMapper2->setMapping(m_addFilter, "add");
+    m_sigMapper2->setMapping(m_delFilter, "remove");
+    connect(m_sigMapper2, SIGNAL(mapped(QString)), this, SLOT(showFrameBox(QString)));
+
 
     QToolBar *toolBar = new QToolBar;
     toolBar->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -87,12 +92,12 @@ void ConfigUI::createMenu()
     m_fileMenu->addAction(actionSave);
     m_fileMenu->addAction(actionSaveAs);
 
-    m_sigMapper = new QSignalMapper(this);
-    connect(actionSave, SIGNAL(triggered()), m_sigMapper, SLOT(map()));
-    connect(actionSaveAs, SIGNAL(triggered()), m_sigMapper, SLOT(map()));
-    m_sigMapper->setMapping(actionSave, "save");
-    m_sigMapper->setMapping(actionSaveAs, "saveAs");
-    connect(m_sigMapper, SIGNAL(mapped(QString)), this, SLOT(saveXML(QString)));
+    m_sigMapper1 = new QSignalMapper(this);
+    connect(actionSave, SIGNAL(triggered()), m_sigMapper1, SLOT(map()));
+    connect(actionSaveAs, SIGNAL(triggered()), m_sigMapper1, SLOT(map()));
+    m_sigMapper1->setMapping(actionSave, "save");
+    m_sigMapper1->setMapping(actionSaveAs, "saveAs");
+    connect(m_sigMapper1, SIGNAL(mapped(QString)), this, SLOT(saveXML(QString)));
 
     // File -> Exit
     m_fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
@@ -115,7 +120,7 @@ void ConfigUI::createFrameBox() {
     m_frameBox->setFrameStyle ( QFrame::Box | QFrame::Raised);
     m_acceptButton = new QPushButton("Ok");
     m_cancelButton = new QPushButton("Cancel");
-    connect(m_acceptButton, SIGNAL(clicked()), this, SLOT(addFilterToGui()));
+    connect(m_acceptButton, SIGNAL(clicked()), this, SLOT(processFilterToGui()));
     connect(m_cancelButton, SIGNAL(clicked()), this, SLOT(hideFrameBox()));
 
     layout->addWidget(m_listView, 0, 0, 1, 0);
@@ -126,6 +131,14 @@ void ConfigUI::createFrameBox() {
     m_frameBox->hide();
 }
 
+void ConfigUI::processFilterToGui() {
+    if (m_buttonPressed == "add") {
+        addFilterToGui();
+    } else if (m_buttonPressed == "remove"){
+        removeFilter();
+    }
+}
+
 /**
  * @brief ConfigUI::getFilterFromXml  - Retrieves the missing filters from the
  * opened xml file, and returns a list with those filters corresponding to the
@@ -133,7 +146,7 @@ void ConfigUI::createFrameBox() {
  *
  * @return  a list with the missing filters as a QStandardItemModel object
  */
-QStandardItemModel* ConfigUI::getFilterFromXml() {
+QStandardItemModel* ConfigUI::getFilterFromXml(QString buttonPressed) {
 
     int tabIndex = m_tabWidget->currentIndex();
     QString tabName = m_tabWidget->tabText(tabIndex);
@@ -141,21 +154,46 @@ QStandardItemModel* ConfigUI::getFilterFromXml() {
     QDomNodeList filterList = tabNode.childNodes();
 
     QStandardItemModel* listModel = new QStandardItemModel();
-    for (int ii = 0; ii < filterList.count(); ++ii) {
-        QDomElement filterNode = filterList.at(ii).toElement();
+    if (buttonPressed == "add") {
+        for (int ii = 0; ii < filterList.count(); ++ii) {
+            QDomElement filterNode = filterList.at(ii).toElement();
+            if ( filterNode.attribute("visible", "") == "false"){
+                QDomNodeList keyList = filterNode.childNodes();
 
-        if ( filterNode.attribute("visible", "") == "false"){
-            QDomNodeList keyList = filterNode.childNodes();
+                for (int jj = 0; jj < keyList.count(); ++jj)
+                {
+                    QDomElement keyNode = keyList.at(jj).toElement();
+                    if ( keyNode.attribute("name", "") == "type"){
+                        QString filterText = ": " + keyNode.attribute("alias") + "-"
+                                + keyNode.text();
+                        QString filterName = filterNode.tagName() + filterText;
+                        QStandardItem* listItem = new QStandardItem(filterName);
+                        listModel->appendRow(listItem);
+                        m_buttonPressed = "add";
+                    }
+                }
+            }
+        }
+    } else if (buttonPressed == "remove"){
+        for (int ii = 0; ii < filterList.count(); ++ii) {
+            QLayoutItem* item = m_tabWidget->widget(tabIndex)->layout()->itemAt(ii);
+            QString widgetType = QString(item->widget()->metaObject()->className());
+            QDomElement filterNode = filterList.at(ii).toElement();
 
-            for (int jj = 0; jj < keyList.count(); ++jj)
-            {
-                QDomElement keyNode = keyList.at(jj).toElement();
-                if ( keyNode.attribute("name", "") == "type"){
-                    QString filterText = ": " + keyNode.attribute("alias") + "-"
-                            + keyNode.text();
-                    QString filterName = filterNode.tagName() + filterText;
-                    QStandardItem* listItem = new QStandardItem(filterName);
-                    listModel->appendRow(listItem);
+            if (widgetType == "QGroupBox" && !item->widget()->isHidden()) {
+                QDomNodeList keyList = filterNode.childNodes();
+
+                for (int jj = 0; jj < keyList.count(); ++jj)
+                {
+                    QDomElement keyNode = keyList.at(jj).toElement();
+                    if ( keyNode.attribute("name", "") == "type"){
+                        QString filterText = ": " + keyNode.attribute("alias") + "-"
+                                + keyNode.text();
+                        QString filterName = filterNode.tagName() + filterText;
+                        QStandardItem* listItem = new QStandardItem(filterName);
+                        listModel->appendRow(listItem);
+                        m_buttonPressed = "remove";
+                    }
                 }
             }
         }
@@ -215,18 +253,46 @@ void ConfigUI::addFilterToGui() {
 }
 
 void ConfigUI::removeFilter() {
+    QStringList filterList;
+    QModelIndexList listModel = m_listView->selectionModel()->selectedIndexes();
+    for(int ii=0; ii < listModel.count(); ++ii) {
+        QStringList dataTokens = listModel.at(ii).data(Qt::DisplayRole).
+                toString().split(':');
+        filterList.append(dataTokens.at(0));
+    }
 
+    QWidget *tab = m_tabWidget->currentWidget();
+    int tabIndex = m_tabWidget->currentIndex();
+    QString tabName = m_tabWidget->tabText(tabIndex);
+
+    for(int ii = 0; ii < tab->layout()->count(); ++ii)
+    {
+        QLayoutItem* item = tab->layout()->itemAt(ii);
+        QString widgetType = QString(item->widget()->metaObject()->className());
+
+        if(widgetType == "QGroupBox" && !item->widget()->isHidden()){
+            QString filterName = static_cast<QGroupBox*>(item->widget())->title();
+            if (filterList.contains(filterName, Qt::CaseInsensitive)){
+                item->widget()->setVisible(false);
+                updateFilterToXml(tabName, filterName, "false");
+            }
+        }
+    }
+
+    m_addFilter->setEnabled(true);
+    m_delFilter->setEnabled(true);
+    m_frameBox->hide();
 }
 
 /**
  * @brief ConfigUI::showFrameBox  Displays the frame box from which user can
  * add new filters.
  */
-void ConfigUI::showFrameBox() {
+void ConfigUI::showFrameBox(QString buttonPressed) {
 
     m_addFilter->setEnabled(false);
     m_delFilter->setEnabled(false);
-    m_listView->setModel(getFilterFromXml());
+    m_listView->setModel(getFilterFromXml(buttonPressed));
     m_frameBox->show();
 }
 
@@ -403,6 +469,8 @@ void ConfigUI::saveXML(QString saveType)
                     if((filterAttr == "false") &&
                             !groupBox->widget()->isHidden())
                         filterAttr = "true";
+                    else if(filterAttr == "true" && groupBox->widget()->isHidden())
+                        filterAttr = "false";
                     filterElem.setAttribute("visible", filterAttr);
                 }
             }

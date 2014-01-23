@@ -64,12 +64,18 @@ private slots:
      * @brief showFrameBox  Displays the frame box from which user can
      * add new filters.
      */
-    void showFrameBox();
+    void showFrameBox(QString buttonPressed);
 
     /**
      * @brief hideFrameBox  Hides the frame box from the screen.
      */
     void hideFrameBox();
+
+    /**
+     * @brief processFilterToGui
+     * @param buttonPressed
+     */
+    void processFilterToGui();
 
     /**
      * @brief addFilterToGui  Displays the selected filters on the current tab
@@ -130,7 +136,7 @@ private:
      *
      * @return  a list with the missing filters as a QStandardItemModel object
      */
-    QStandardItemModel* getFilterFromXml();
+    QStandardItemModel* getFilterFromXml(QString buttonPressed);
 
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
@@ -139,9 +145,9 @@ private:
     QDialogButtonBox *m_buttonBox;
     QMenuBar *m_menuBar;
     QMenu *m_fileMenu;
-    QString m_xmlPath;
     QDomDocument m_Doc;
-    QSignalMapper *m_sigMapper;
+    QSignalMapper *m_sigMapper1;
+    QSignalMapper *m_sigMapper2;
     QList<QPushButton*> m_buttonList;
     QPushButton *m_addFilter;
     QPushButton *m_delFilter;
@@ -149,6 +155,8 @@ private:
     QPushButton *m_cancelButton;
     QFrame *m_frameBox;
     QListView *m_listView;
+    QString m_xmlPath;
+    QString m_buttonPressed;
 };
 
 
