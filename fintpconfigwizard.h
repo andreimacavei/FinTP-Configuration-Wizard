@@ -21,7 +21,7 @@ QT_END_NAMESPACE
 /**
  * @brief The ConfigUI class
  * The main class for our configuration GUI that holds all the necessary
- * methods to parse XML file and generate the GUI
+ * methods to parse a Xml file and generate the GUI.
  *
  */
 class ConfigUI: public QMainWindow
@@ -31,6 +31,7 @@ class ConfigUI: public QMainWindow
 public:
     /**
      * @brief ConfigUI  Constructs the main window
+     *
      * @param fileName  the file used to generate the UI
      * @param parent  the parent widget of all widgets used
      */
@@ -39,27 +40,28 @@ public:
 private slots:
     /**
      * @brief writeFileStream  Writes the QDomDocument to a file on disk
-     * @param doc the QDomDocument to be written on file.
-     * @param saveType used to decide between save to a new file or override
-     * the current file.
+     *
+     * @param doc  the QDomDocument to be written on file.
+     * @param saveType  a string used to decide if the Dom document should be
+     * saved on a new file or override the currently opened file.
      */
     void writeFileStream(QDomDocument doc, QString saveType);
 
     /**
      * @brief parseXML  Parses the input xml file using a QDomDocument
-     * object, then generates the GUI.
-     * @param doc  the QDomDocument object used to parse a xml file.
+     * then generates the GUI.
+     * @param doc  the QDomDocument class used to parse a xml file.
      */
     void parseXML(const QDomDocument &doc);
 
     /**
-     * @brief resetUI  De-allocates all widgets objects from  the
+     * @brief resetUI  De-allocates memory for all widgets objects from  the
      * main window.
      */
     void resetUI();
 
     /**
-     * @brief showFrameBox  Displays the frame box from where user can
+     * @brief showFrameBox  Displays the frame box from which user can
      * add new filters.
      */
     void showFrameBox();
@@ -71,9 +73,13 @@ private slots:
 
     /**
      * @brief addFilterToGui  Displays the selected filters on the current tab
-     * of the GUI, as a GroupBox Widget
+     * of the GUI, as a GroupBox widget.
      */
     void addFilterToGui();
+
+    /**
+     * @brief removeFilter  Removes the selected filters from the current tab.
+     */
     void removeFilter();
 
 public slots:
@@ -102,9 +108,27 @@ private:
      * select and add missing filters to the current tab.
      */
     void createFrameBox();
+
+    /**
+     * @brief updateFilterToXml  Updates the visible attribute of a
+     * filter in the xml file (visible = true or false).
+     *
+     * @param tabName  The tab (or main filter) to which this filter belongs
+     * @param filterName  The filter name to have its visible attribute updated
+     * @param filterAttr  true or false depending if the filter should be
+     * visible or not in the GUI.
+     */
     void updateFilterToXml(const QString tabName, const QString filterName,
                            QString filterAttr);
+
+    /**
+     * @brief getFilterFromXml  Retrieves the missing filters from the
+     * opened xml file, and returns a list with those filters corresponding to
+     * the currently selected tab.
+     * @return  a list with the missing filters as a QStandardItemModel object
+     */
     QStandardItemModel* getFilterFromXml();
+
     QDomElement addElement( QDomDocument &doc, QDomNode &node, const QString &tag,
                             const QString &value );
     QTabWidget *m_tabWidget;
