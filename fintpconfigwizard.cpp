@@ -172,22 +172,22 @@ QStandardItemModel* ConfigUI::getFilterFromXml() {
  * @param filterAttr  true or false depending if the filter should be visible
  * or not in the GUI.
  */
-void ConfigUI::updateFilterToXml(QString tabName, QString filterName, QString filterAttr) {
-
-    QDomElement tabNode = m_Doc.documentElement().firstChildElement(tabName);
-    QDomElement filterNode = tabNode.firstChildElement(filterName);
-    filterNode.setAttribute("visible", filterAttr);
+void ConfigUI::updateFilterToXml(QString tabName, QString filterName,
+                                 QString filterAttr) {
+    m_Doc.documentElement().firstChildElement(tabName).
+            firstChildElement(filterName).setAttribute("visible", filterAttr);
 }
 
 /**
- * @brief ConfigUI::addFilterToGui  Displays the selected filters on the current tab
- * of the GUI, as a GroupBox Widget.
+ * @brief ConfigUI::addFilterToGui  Displays the selected filters on the
+ * current tab of the GUI, as a GroupBox Widget.
  */
 void ConfigUI::addFilterToGui() {
     QStringList filterList;
     QModelIndexList listModel = m_listView->selectionModel()->selectedIndexes();
     for(int ii=0; ii < listModel.count(); ++ii) {
-        QStringList dataTokens = listModel.at(ii).data(Qt::DisplayRole).toString().split(':');
+        QStringList dataTokens = listModel.at(ii).data(Qt::DisplayRole).
+                toString().split(':');
         filterList.append(dataTokens.at(0));
     }
 
@@ -356,7 +356,7 @@ QDomElement ConfigUI::addElement( QDomDocument &doc, QDomNode &node,
  */
 void ConfigUI::saveXML(QString saveType)
 {
-    // Create a QDomDocument to save the current GUI
+    // Creates a QDomDocument to save the current GUI
     QDomDocument domDocument;
     QDomProcessingInstruction instr = domDocument.createProcessingInstruction(
                         "xml", "version='1.0' encoding='UTF-8'");
@@ -398,8 +398,13 @@ void ConfigUI::saveXML(QString saveType)
             }
             else{
                 filterElem = domDocument.createElement(filterName);
-                if (groupBox->widget()->objectName() != "")
-                    filterElem.setAttribute("visible", groupBox->widget()->objectName());
+                if (groupBox->widget()->objectName() != "") {
+                    QString filterAttr = groupBox->widget()->objectName();
+                    if((filterAttr == "false") &&
+                            !groupBox->widget()->isHidden())
+                        filterAttr = "true";
+                    filterElem.setAttribute("visible", filterAttr);
+                }
             }
             tabElem.appendChild(filterElem);
 
@@ -489,7 +494,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             // For each child Filter we create a GroupBox widget on current tab
 
             QString filterName = childList.at(j).toElement().tagName();
-            QString visibleAttr = childList.at(j).toElement().attribute("visible");
+            QString visibleAttr = childList.at(j).toElement().attribute("visible", "");
 
             if (filterName == "sectionGroup"){
                 filterName = childList.at(j).toElement().attribute("name");
@@ -507,6 +512,7 @@ void ConfigUI::parseXML(const QDomDocument &document) {
             /*
              * TODO : Modify implicit stretch factor on all groupBoxes
              */
+
             // Get all keys attributes for this filter.
             QDomNode keyNode = childList.at(j).firstChild();
             while(!keyNode.isNull())
